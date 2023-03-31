@@ -324,9 +324,11 @@ while flag == 0
   Mesh.Velocity = vecnorm((P - Pc)')';
   
   Anew = sum(abs(A));
+
+  Mesh.Convergence = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2)))*Mesh.NElem/(Anew^1.5);
   
-  Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
-      .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
+  % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
+  %     .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
   
   [flag,Mesh] = CheckConvergence(Mesh);
   
@@ -581,9 +583,8 @@ function BndList = ConstructBounds(Mesh)
     for ii = 1:length(BndList)
        Elem = unique(BndList{ii}(:),'stable');
        V = Mesh.Node(Elem,:);
-       [~,isClockWise] = polygonArea(V(:,1),V(:,2));
-       
-       if ~isClockWise, 
+             
+       if ~ispolyclockwise(V(:,1),V(:,2))
            BndList{ii} = rot90(BndList{ii},2); 
        end
            
@@ -602,7 +603,7 @@ Ctr = 0;
 while(Ctr < Mesh.NElem)
     Y = zeros(Mesh.NElem,Mesh.Dim);
     for ii = 1:Mesh.Dim
-    Y(:,ii) = (B(2*ii)-B(2*ii-1))*rand(Mesh.NElem,1)+B(2*ii-1);
+        Y(:,ii) = (B(2*ii)-B(2*ii-1))*rand(Mesh.NElem,1)+B(2*ii-1);
     end
     d = Mesh.SDF(Y);
     I = find(d(:,end)<0);               
@@ -617,7 +618,7 @@ Alpha = 1.5*(A/Mesh.NElem)^(1/2);
 d = Mesh.SDF(P);  
 
 % number of assigned boundary segments
-NBdrySegs = (size(d,2)-1);   
+NBdrySegs = (size(d,2)-1)*2;   
 if Mesh.Dim == 2
 n1 = (Mesh.SDF(P+repmat([Mesh.eps,0],Mesh.NElem,1))-d)/Mesh.eps;
 n2 = (Mesh.SDF(P+repmat([0,Mesh.eps],Mesh.NElem,1))-d)/Mesh.eps;
@@ -744,7 +745,6 @@ function [Pc,W] = CentroidPolyhedron(~,Node,Element)
     Mg = [mg(:,1),mg(:,2),mg(:,3)];
     
     Pc = sum(Mg)./W;
-    
 end
 %----------------------------------------------- triangulate polygonal mesh
 function [v, f] = MeshTriangulation(~,Center,v0,f0,Nel,Nvr)
