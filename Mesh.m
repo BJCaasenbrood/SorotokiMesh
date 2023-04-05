@@ -30,10 +30,10 @@ classdef Mesh
         Dim;
         Center;
         Area;
-        ElementMat;
-        FaceToNode;
-        NodeToFace;
-        ElementToFace;
+        % ElementMat;
+        % FaceToNode;
+        % NodeToFace;
+        % ElementToFace;
     end
     
     properties (Access = private)
@@ -155,7 +155,6 @@ function obj = Mesh(Input,varargin)
        obj.NElem = 200;
        
     elseif isa(Input,'Sdf')
-       %obj.SDF0 = Input;
        obj.Sdf  = @(x) Input.eval(x);
        obj.NElem = 200;
        if ~isempty(Input.BdBox)
@@ -224,27 +223,35 @@ function obj = Mesh(Input,varargin)
     
 end
 %---------------------------------------------------------------------- set
-function Mesh = set(Mesh,varargin)
+function Mesh = set(Mesh, varargin)
+
     for ii = 1:2:length(varargin)
-        if strcmp(varargin{ii},'Quads')
-            N = num2cell(varargin{ii+1});
-            Mesh.Center = Quads(Mesh.BdBox,N{:});
+
+        if strcmp(varargin{ii}, 'Quads')
+            N = num2cell(varargin{ii + 1});
+            Mesh.Center = Quads(Mesh.BdBox, N{:});
             Mesh.Type = 'C2Q2';
         else
-            Mesh.(varargin{ii}) = varargin{ii+1};
+            Mesh.(varargin{ii}) = varargin{ii + 1};
         end
+
     end
+
 end
 %---------------------------------------------------------------------- get     
-function varargout = get(Mesh,varargin)
+function varargout = get(Mesh, varargin)
+
     if nargin > 1
-        varargout{nargin-1,1} = [];
+        varargout{nargin - 1, 1} = [];
+
         for ii = 1:length(varargin)
-            varargout{ii,1} = Mesh.(varargin{ii});
+            varargout{ii, 1} = Mesh.(varargin{ii});
         end
+
     else
         varargout = Mesh.(varargin);
     end
+
 end
 %------------------------------------------------------------- get boundary
 function varargout = getBoundary(Mesh)
@@ -328,7 +335,7 @@ while Mesh.solver.Flag == 0
   
   Anew = sum(abs(A));
 
-  Mesh.solver.RelTolerance = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2))) *     ...
+  Mesh.solver.Residual = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2))) *     ...
       Mesh.NElem/(Anew^1.5);
   
   % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
@@ -1134,9 +1141,9 @@ else
     if (Mesh.solver.Iteration > Mesh.solver.MaxIteration)
         Mesh.solver.Flag = 2; 
     elseif (Mesh.solver.Iteration == 1)
-        Mesh.solver.Flagag = 0;        
+        Mesh.solver.Flag = 0;        
     elseif strcmp(Mesh.Type,'C3H8')
-        Mesh.solver.Flagg = 2;        
+        Mesh.solver.Flag = 2;        
     else
         Mesh.solver.Flag = 1;
     end
