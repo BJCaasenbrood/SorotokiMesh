@@ -14,49 +14,55 @@
 classdef Mesh
 
     properties (Access = public)
-        SDF;
-        SDF0;
+        Sdf;
+        options;
+        solver;
+        geometry;
+        states;
+
+        %SDF0;
+        Type;
         BdBox;
         Node;
         Element;
         NNode;
         NElem;
         Dim;
-        Type;
         Center;
+        Area;
+        ElementMat;
         FaceToNode;
         NodeToFace;
         ElementToFace;
     end
     
     properties (Access = private)
-        Area;
-        Convergence;
-        Velocity;
-        Adjecency;
-        Boundary;
-        Normal;
-        Edge;
-        Iteration;
-        ElemMat;
-        BndMat;
-        eps; 
-        eta; 
-        Triangulate;
-        Laplacian;
-        MaxIteration;
-        Movie;
-        MovieStart;
-        CollapseTol;
-        ConvNorm;
-        ShowProcess;
-        Colormap;
-        LineStyle;
-        Image;
-        SimplifyTol;
-        Hmesh;
-        STLFile;
-        MatlabMeshType = 'linear';
+        % Area;
+        % Convergence;
+        % Velocity;
+        % Adjecency;
+        % Boundary;
+        % Normal;
+        % Edge;
+        % Iteration;
+        % ElemMat;
+        % BndMat;
+        % eps; 
+        % eta; 
+        % Triangulate;
+        % Laplacian;
+        % Movie;
+        % MovieStart;
+        % CollapseTol;
+        % ConvNorm;
+        % ShowProcess;
+        % Colormap;
+        % LineStyle;
+        % Image;
+        % SimplifyTol;
+        % Hmesh;
+        % STLFile;
+        % MatlabMeshType = 'linear';
     end
     
 %--------------------------------------------------------------------------
@@ -64,25 +70,14 @@ methods
 %--------------------------------------------------------------- Mesh Class
 function obj = Mesh(Input,varargin) 
     
-    obj.ShowProcess  = false;
-    obj.MaxIteration = 100;
-    obj.Iteration    = 0;
-    obj.ElemMat      = -1;
-    obj.eps          = 1e-6; 
-    obj.eta          = 0.9;
-    obj.Triangulate  = false;
-    obj.Movie        = false;
-    obj.MovieStart   = false;
-    obj.CollapseTol  = 0.2;
-    obj.ConvNorm     = 1e-3;
-    obj.ShowProcess  = false;
-    obj.Colormap     = cmap_turbo;
-    obj.LineStyle    = '-';
-    obj.Type         = 'C2PX';
-    obj.Image        = [];
-    obj.SimplifyTol  = 0.05;
-    obj.STLFile      = [];
+    obj.options   = meshoptions;    
+    obj.solver    = solveroptions;
+    obj.geometry  = struct;
+    obj.states    = struct;
+    obj.Type      = '';
     
+    obj.solver.MaxIteration = 100;
+
     if isa(Input,'char')
        [~,~,ext] = fileparts(Input);
        if strcmp(ext,'.stl')
@@ -96,19 +91,19 @@ function obj = Mesh(Input,varargin)
            warning on  
            Input = v;
            varargin{1} = f;
-           obj.STLFile = struct;
+           obj.options.STLFile         = struct;
            obj.STLFile.Node    = v;
            obj.STLFile.Element = f;
        elseif strcmp(ext,'.obj')
            [v,f] = objreader(Input);
        elseif strcmp(ext,'.png') || strcmp(ext,'.jpg') 
-           obj.Dim   = 2;
+           obj.options.Dimension   = 2;
            obj.Type  = 'C2T3'; 
            obj.Image = rgb2gray(imread(Input));
        else, cout('err','* extension not recognized');
        end
        
-       if isempty(obj.Image) && isempty(obj.STLFile)  
+       if isempty(obj.options.Image) && isempty(obj.STLFile)  
         obj.Node    = v;
         obj.NNode   = length(v);
         obj.Element = num2cell(f,2);
@@ -129,7 +124,8 @@ function obj = Mesh(Input,varargin)
        obj.NElem   = size(varargin{1},1);
        obj.BdBox   = boxhull(v);   
        obj.Dim     = size(v,2);
-       obj.ElemMat = varargin{1};
+       
+       obj.geometry.ElemMat = varargin{1};
        
        if obj.Dim == 3 && size(varargin{1},2) == 4
           obj.Type = 'C3T4';  
@@ -148,19 +144,19 @@ function obj = Mesh(Input,varargin)
        
        [Pc,~] = computeCentroid(obj,obj.Element,v); 
        
-       obj.MaxIteration = -1;
+       obj.options.MaxIteration = -1;
        obj.Center = Pc;
-       obj.SDF = @(x) -1*ones(length(Pc),1);
+       obj.Sdf = @(x) -1*ones(length(Pc),1);
        
        obj = ElementAdjecency(obj);
        
     elseif isa(Input,'function_handle')
-       obj.SDF = Input;
+       obj.Sdf   = Input;
        obj.NElem = 200;
        
     elseif isa(Input,'Sdf')
-       obj.SDF0 = Input;
-       obj.SDF  = @(x) Input.eval(x);
+       %obj.SDF0 = Input;
+       obj.Sdf  = @(x) Input.eval(x);
        obj.NElem = 200;
        if ~isempty(Input.BdBox)
           obj.BdBox = Input.BdBox;
@@ -169,9 +165,9 @@ function obj = Mesh(Input,varargin)
         obj.Dim   = 2;
         obj.Type  = 'C2T3';
         if size(Input,3) == 3
-            obj.Image = rgb2gray(Input);
+            obj.options.Image = rgb2gray(Input);
         else
-            obj.Image = Input;
+            obj.options.Image = Input;
         end
     end
     
@@ -189,18 +185,26 @@ function obj = Mesh(Input,varargin)
             obj.Center = Hexahedron(obj.BdBox,N{:});
             obj.Type   = 'C3T4';
         else
-            obj.(varargin{ii}) = varargin{ii+1};
+            if isprop(obj.options,varargin{ii})
+                obj.options.(varargin{ii}) = varargin{ii+1};
+            else
+                obj.(varargin{ii}) = varargin{ii+1};
+            end
         end
+    end  
+    
+    if obj.options.Triangulate
+        obj.Type = 'C2T3'; 
     end
-    
-    
-    if obj.Triangulate,  obj.Type = 'C2T3'; end
-    if isempty(obj.SDF), obj.Type = 'C3T3'; end
+
+    if isempty(obj.Sdf)
+        obj.Type = 'C3T3'; 
+    end
     
     obj.Dim = 0.5*numel(obj.BdBox);
     
-    if ~isempty(obj.Image)
-        [v,f] = GenerateMeshImage(obj,obj.Image);
+    if ~isempty(obj.options.Image)
+        [v,f] = GenerateMeshImage(obj,obj.options.Image);
         
         obj.Node    = v;
         obj.NNode   = length(v);
@@ -211,21 +215,16 @@ function obj = Mesh(Input,varargin)
         
         [Pc,~] = computeCentroid(obj,obj.Element,v); 
        
-        obj.MaxIteration = -1;
         obj.Center = Pc;
-        obj.SDF = @(x) -1*ones(length(Pc),1);
+        obj.Sdf    = @(x) -1*ones(length(Pc),1);
         
-    elseif ~isempty(obj.STLFile)
+    elseif ~isempty(obj.options.STLFile)
         % not implemented yet
     end
     
 end
 %---------------------------------------------------------------------- set
 function Mesh = set(Mesh,varargin)
-% sets any variable(s) in Class hierarchy.
-% example usage: 
-%  
-%   msh = msh.set('NNode',20,'NElem',42)
     for ii = 1:2:length(varargin)
         if strcmp(varargin{ii},'Quads')
             N = num2cell(varargin{ii+1});
@@ -238,10 +237,6 @@ function Mesh = set(Mesh,varargin)
 end
 %---------------------------------------------------------------------- get     
 function varargout = get(Mesh,varargin)
-% gets any variable(s) in Class hierarchy.
-% example usage: 
-%  
-%   [n,m] = msh.get('NNode','NElem')
     if nargin > 1
         varargout{nargin-1,1} = [];
         for ii = 1:length(varargin)
@@ -253,35 +248,43 @@ function varargout = get(Mesh,varargin)
 end
 %------------------------------------------------------------- get boundary
 function varargout = getBoundary(Mesh)
-varargout{1} = Mesh.Boundary;
+    varargout{1} = Mesh.Boundary;
 end
 %-------------------------------------------------------------- get normal
 function varargout = getNormal(Mesh)
-varargout{1} = Mesh.Normal;
+    varargout{1} = Mesh.Normal;
 end
 %---------------------------------------------------------------------- set
-function Mesh = generate(Mesh)
+function Mesh = generate(Mesh, varargin)
+
+for ii = 1:2:length(varargin)
+    if strcmp(varargin{ii},'Quads')
+        N = num2cell(varargin{ii+1});
+        Mesh.Center = Quads(Mesh.BdBox,N{:});
+        Mesh.Type = 'C2Q2';
+    else
+        Mesh.(varargin{ii}) = varargin{ii+1};
+    end
+end 
 
 if isempty(Mesh.Center)
     Pc = randomPointSet(Mesh); 
 elseif strcmp(Mesh.Type,'C3H8')    
-    %Mesh.MaxIteration = 1;
     Pc = Mesh.Center; 
     Mesh.NElem = length(Pc);
 elseif strcmp(Mesh.Type,'C2Q4')    
     if ~isempty(Mesh.Center) 
-        %Mesh.MaxIteration = 1;
         Pc = Mesh.Center; 
         Mesh.NElem = size(Pc,1);
     else
         return;
     end
-elseif ~isempty(Mesh.STLFile)
+elseif ~isempty(Mesh.options.STLFile)
     return;
 else
     %Mesh.MaxIteration = 1;
     Pc = Mesh.Center; 
-    d = Mesh.SDF(Pc);
+    d = Mesh.Sdf(Pc);
     Pc = Pc(d(:,end)<0,:);  
     Mesh.NElem = length(Pc);
 end
@@ -294,16 +297,16 @@ Anew = (Mesh.BdBox(2)-Mesh.BdBox(1))*(Mesh.BdBox(4)-Mesh.BdBox(3))*...
        (Mesh.BdBox(6)-Mesh.BdBox(5));
 end
 
-if Mesh.MaxIteration < 0
-    flag = 1;
+if Mesh.options.MaxIteration < 0
+    Mesh.solver.Flag = 1;
     f = Mesh.Element;
     v = Mesh.Node;
 else
-    flag = 0;
+    Mesh.solver.Flag = 0;
 end
 
 % loyd's algorithm 
-while flag == 0
+while Mesh.solver.Flag == 0
   
   % update seeding points
   P = Pc;
@@ -315,39 +318,25 @@ while flag == 0
   Rb = boundingReflect(Mesh);
 
   % generate Voronoi tesselation
-  [v,f] = voronoin([P;Rp;Rb],{'Qt','Pp'});   
+  [v, f] = voronoin([P;Rp;Rb],{'Qt','Pp'});   
   
   % compute centroid and area
-  [Pc,A] = computeCentroid(Mesh,f,v); 
+  [Pc, A] = computeCentroid(Mesh,f,v); 
   
   % compute velocity
-  Mesh.Velocity = vecnorm((P - Pc)')';
+%  Mesh.Velocity = vecnorm((P - Pc)')';
   
   Anew = sum(abs(A));
 
-  Mesh.Convergence = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2)))*Mesh.NElem/(Anew^1.5);
+  Mesh.solver.RelTolerance = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2))) *     ...
+      Mesh.NElem/(Anew^1.5);
   
   % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
   %     .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
   
-  [flag,Mesh] = CheckConvergence(Mesh);
-  
-  Mesh.Iteration = Mesh.Iteration + 1;
-  
-  if Mesh.Movie
-      [Pc,A] = computeCentroid(Mesh,f,v);
-      
-      Mesh.Center  = Pc;
-      Mesh.Node    = v;
-      Mesh.Element = f(1:Mesh.NElem);
-      Mesh.NNode   = length(v);
-      Mesh.Area    = A;
-      
-      Mesh = ElementAdjecency(Mesh);
-      show(Mesh,'Area');
-      hold on;
-      plot(Pc(:,1),Pc(:,2),'k.','MarkerSize',10);
-  end
+  Mesh = CheckConvergence(Mesh);
+
+  Mesh.solver.Iteration = Mesh.solver.Iteration + 1;
   
 end
 
@@ -365,7 +354,7 @@ if strcmp(Mesh.Type,'C3H8')
     [v,f] = HexahedronOrder(Mesh,v,f);
 end
 
-if Mesh.Triangulate
+if Mesh.options.Triangulate
     Mesh.Node    = v;
     Mesh.Element = f;
     
@@ -390,14 +379,14 @@ Mesh.Area    = A;
 Mesh = ElementAdjecency(Mesh);
 
 if Mesh.Dim < 3
-    Mesh.BndMat = ConstructBounds(Mesh);
+    Mesh.geometry.BndMat = ConstructBounds(Mesh);
 else
     List = (1:Mesh.NNode).';
     Bnd  = [];
     if ~isempty(Mesh.SDF)
-        for ii = 1:size(Mesh.ElemMat,1)
-            Face = Mesh.ElemMat(ii,1:end-1).';
-            D = Mesh.SDF(Mesh.Node(Face,:));
+        for ii = 1:size(Mesh.geometry.ElemMat,1)
+            Face = Mesh.geometry.ElemMat(ii,1:end-1).';
+            D = Mesh.Sdf(Mesh.Node(Face,:));
 
             if sum(abs(D(:,end))) < 1e-3
                 Bnd = [Bnd; Face.'];
@@ -409,7 +398,7 @@ end
 
 if strcmp(Mesh.Type,'C3T3') || strcmp(Mesh.Type,'C2T3')
     list  = (1:Mesh.NNode).';
-    Bnd = vertcat(Mesh.BndMat{:});
+    Bnd = vertcat(Mesh.geometry.BndMat{:});
     Pfix  = unique(Bnd(:));
     Pfree = setdiff(list,Pfix);
     N2F = Mesh.FaceToNode;
@@ -442,18 +431,21 @@ end
 end
 %---------------------------------------------------------------- show mesh
 function h = show(Mesh,varargin)
-if nargin<2, Request = -1; 
-else, Request = varargin{1}; end
+if nargin<2
+    Request = -1;
+else
+    Request = varargin{1};
+end
 
 figure(101);
 
 % generate elemental matrices for plotting
 AreaC = sum(abs(Mesh.Area(:)))/(0.5*Mesh.NElem)+1e-3;
-Mesh = ElementAdjecency(Mesh);
-fs = 'flat';
+Mesh  = ElementAdjecency(Mesh);
+fs    = 'flat';
 
 switch(Request)
-    case('SDF'),      Z = Mesh.SDF(Mesh.Node); Z = Z(:,end);
+    case('SDF'),      Z = Mesh.Sdf(Mesh.Node); Z = Z(:,end);
     case('Velocity'), Z = (Mesh.Velocity')'; caxis([0 0.01]); 
     case('Gradient'), Z = GradientField(Mesh,Mesh.Node);
     case('Node'),     Z = varargin{2};
@@ -469,13 +461,13 @@ if ~strcmp(Request,'Node') && ~strcmp(Request,'Element') ...
 cla; axis equal; axis off; hold on;
     
 % plot tesselation
-h{1} = patch('Faces',Mesh.ElemMat,'Vertices',Mesh.Node,'FaceVertexCData',Z,...
-    'Facecolor',fs,'LineStyle',Mesh.LineStyle,'Linewidth',1.5,...
-    'EdgeColor','k');
+h{1} = patch('Faces',Mesh.geometry.ElemMat,'Vertices',Mesh.Node,            ...
+    'FaceVertexCData',Z,'Facecolor',fs,'LineStyle',Mesh.options.LineStyle,  ...
+    'Linewidth',1.5,'EdgeColor','k');
 
 % plot boundaries
-h{2} = patch('Faces',Mesh.Boundary,'Vertices',Mesh.Node,'LineStyle','-',...
-    'Linewidth',1.5,'EdgeColor','k');
+h{2} = patch('Faces',Mesh.geometry.Boundary,'Vertices',Mesh.Node,           ...
+    'LineStyle','-','Linewidth',1.5,'EdgeColor','k');
 
 hold on;
 
@@ -504,8 +496,9 @@ elseif strcmp(Request,'Holes')
     end
 end
 
-axis(Mesh.BdBox); axis tight;
-colormap(Mesh.Colormap);
+colormap(Mesh.options.ColorMap);
+axis(Mesh.BdBox); 
+axis tight;
 
 end
 %----------------------------------------------------------------- show SDF
@@ -519,14 +512,14 @@ y = linspace(ymin,ymax,Q);
 [X,Y] = meshgrid(x,y);
 
 P = [X(:),Y(:)];
-D = Mesh.SDF(P);
+D = Mesh.Sdf(P);
 Dist = reshape(D(:,end),[Q, Q]);
 cla;
 DistBnd = -wthresh(-Dist,'h',1e-6);
 surf(x,y,Dist,'linestyle','none'); hold on;
 contour3(X,Y,DistBnd,5,'w-','linewidth',1);
 contour(X,Y,Dist,[0 1e-6],'w-','linewidth',2); 
-colormap(Mesh.Colormap);
+colormap(Mesh.options.ColorMap);
 caxis([-1,2 + 1e-6]);
 axis equal;
 axis off;
@@ -546,7 +539,7 @@ end
 %---------------------------------------------------------- find boundaries
 function BndList = ConstructBounds(Mesh)
     
-    Bnd = Mesh.Boundary;
+    Bnd = Mesh.geometry.Boundary;
     ID = 1:length(Bnd);
     ii = 1;
     
@@ -564,10 +557,10 @@ function BndList = ConstructBounds(Mesh)
                
         if Bnd(idx,1) == X
             X = Bnd(idx,2);
-            BndList{ii} = [BndList{ii};Mesh.Boundary(ID(idx),:).'];
+            BndList{ii} = [BndList{ii};Mesh.geometry.Boundary(ID(idx),:).'];
         else
             X = Bnd(idx,1);
-            BndList{ii} = [BndList{ii};flipud(Mesh.Boundary(ID(idx),:).')];
+            BndList{ii} = [BndList{ii};flipud(Mesh.geometry.Boundary(ID(idx),:).')];
         end
         
         Bnd(idx,:) = [];
@@ -605,7 +598,7 @@ while(Ctr < Mesh.NElem)
     for ii = 1:Mesh.Dim
         Y(:,ii) = (B(2*ii)-B(2*ii-1))*rand(Mesh.NElem,1)+B(2*ii-1);
     end
-    d = Mesh.SDF(Y);
+    d = Mesh.Sdf(Y);
     I = find(d(:,end)<0);               
     NumAdded = min(Mesh.NElem-Ctr,length(I));
     P(Ctr+1:Ctr+NumAdded,:) = Y(I(1:NumAdded),:);
@@ -615,17 +608,19 @@ end
 %--------------------------------------------------------- reflect pointset
 function Rp = pointSetReflect(Mesh,P,A)
 Alpha = 1.5*(A/Mesh.NElem)^(1/2);
-d = Mesh.SDF(P);  
+d = Mesh.Sdf(P);  
 
 % number of assigned boundary segments
 NBdrySegs = (size(d,2)-1)*2;   
+eps = Mesh.options.StepTolerance;
+
 if Mesh.Dim == 2
-n1 = (Mesh.SDF(P+repmat([Mesh.eps,0],Mesh.NElem,1))-d)/Mesh.eps;
-n2 = (Mesh.SDF(P+repmat([0,Mesh.eps],Mesh.NElem,1))-d)/Mesh.eps;
+    n1 = (Mesh.Sdf(P+repmat([eps,0],Mesh.NElem,1))-d)/eps;
+    n2 = (Mesh.Sdf(P+repmat([0,eps],Mesh.NElem,1))-d)/eps;
 else
-n1 = (Mesh.SDF(P+repmat([Mesh.eps,0,0],Mesh.NElem,1))-d)/Mesh.eps;
-n2 = (Mesh.SDF(P+repmat([0,Mesh.eps,0],Mesh.NElem,1))-d)/Mesh.eps;
-n3 = (Mesh.SDF(P+repmat([0,0,Mesh.eps],Mesh.NElem,1))-d)/Mesh.eps;
+    n1 = (Mesh.Sdf(P+repmat([eps,0,0],Mesh.NElem,1))-d)/eps;
+    n2 = (Mesh.Sdf(P+repmat([0,eps,0],Mesh.NElem,1))-d)/eps;
+    n3 = (Mesh.Sdf(P+repmat([0,0,eps],Mesh.NElem,1))-d)/eps;
 end
 
 % logical index of seeds near the boundary
@@ -641,11 +636,13 @@ if Mesh.Dim == 3
     Rp(:,3) = P3(I)-2*n3(I).*d(I);  
 end
 
-d_R_P = Mesh.SDF(Rp);
+d_R_P = Mesh.Sdf(Rp);
 if Mesh.NElem > 1 % temporary fix
-    J  = abs(d_R_P(:,end))>=Mesh.eta*abs(d(I)) & d_R_P(:,end)>0;
+    J  = abs(d_R_P(:,end))>=Mesh.options.Eta*abs(d(I))                      ...
+        & d_R_P(:,end)>0;
     Rp = Rp(J,:); 
 end
+
 Rp = unique(Rp,'rows');
 end
 %------------------------------------------------ compute centroid polygons
@@ -816,7 +813,7 @@ while(true)
     beta = mod(beta([2:end 1]) -beta,2*pi);
     betaIdeal = 2*pi/size(Element0{el},2);
     Edge = [Element0{el}',Element0{el}([2:end 1])'];
-    cEdge = [cEdge; Edge(beta<Mesh.CollapseTol*betaIdeal,:)];
+    cEdge = [cEdge; Edge(beta<Mesh.options.CollapseTolerance*betaIdeal,:)];
   end
 
   if (size(cEdge,1)==0)
@@ -1047,7 +1044,7 @@ MaxNVer = max(cellfun(@numel,face));
 
 if Mesh.Dim < 3
     tri = GenerateElementalMatrix(Mesh);
-    Mesh.ElemMat = tri;
+    Mesh.geometry.ElemMat = tri;
 else
     
     if ~strcmp(Mesh.Type,'C3T3')
@@ -1058,7 +1055,7 @@ else
 
     %A = RecoverOuterFaces(A0);
     
-    Mesh.ElemMat = A0;
+    Mesh.geometry.ElemMat = A0;
     A   = vertcat(Mesh.Element{:});
     tri = vertcat(Mesh.Element{:});
     triID = (1:Mesh.NElem).';
@@ -1105,10 +1102,10 @@ E = sort(EdgeMat')';
 counts  = accumarray(n(:), 1);
 B = u(counts==1,:);
 
-Mesh.Adjecency  = sparse(double(C>1));
-Mesh.NodeToFace = (M./sum(M,1))';
-Mesh.FaceToNode = ((M')./sum(M,2)')';
-Mesh.Boundary = B;
+Mesh.geometry.Adjecency  = sparse(double(C>1));
+Mesh.geometry.NodeToFace = (M./sum(M,1))';
+Mesh.geometry.FaceToNode = ((M')./sum(M,2)')';
+Mesh.geometry.Boundary   = B;
 
 end
 %------------------------------------------------------ compute edge matrix
@@ -1128,18 +1125,23 @@ n2 = (Mesh.SDF(P+repmat([0,Mesh.eps],N,1))-d)/Mesh.eps;
 RGB = atan2(n2(:,end),n1(:,end));
 end
 %------------------------------------------------------ isotropic reduction
-function [flag,Mesh] = CheckConvergence(Mesh)
-Criteria = (Mesh.Convergence(end) > Mesh.ConvNorm);
+function Mesh = CheckConvergence(Mesh)
+Criteria = (Mesh.solver.Residual > Mesh.solver.RelTolerance);
 
-if (Criteria && (Mesh.Iteration < Mesh.MaxIteration)), flag = 0;
+if (Criteria && (Mesh.solver.Iteration < Mesh.solver.MaxIteration)) 
+    Mesh.solver.Flag = 0;
 else
-    if (Mesh.Iteration > Mesh.MaxIteration), flag = 2; 
-    elseif (Mesh.Iteration == 1), flag = 0;        
-    elseif strcmp(Mesh.Type,'C3H8'), flag = 2;        
-    else, flag = 1;
+    if (Mesh.solver.Iteration > Mesh.solver.MaxIteration)
+        Mesh.solver.Flag = 2; 
+    elseif (Mesh.solver.Iteration == 1)
+        Mesh.solver.Flagag = 0;        
+    elseif strcmp(Mesh.Type,'C3H8')
+        Mesh.solver.Flagg = 2;        
+    else
+        Mesh.solver.Flag = 1;
     end
 end
-if Mesh.ShowProcess; ProcessMonitor(Mesh); end
+%if Mesh.ShowProcess; ProcessMonitor(Mesh); end
 end
 %---------------------------------------------------------- material filter 
 function ProcessMonitor(Mesh)
