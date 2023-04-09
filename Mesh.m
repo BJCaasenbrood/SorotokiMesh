@@ -20,7 +20,6 @@ classdef Mesh
         geometry;
         states;
 
-        %SDF0;
         Type;
         BdBox;
         Node;
@@ -30,39 +29,8 @@ classdef Mesh
         Dim;
         Center;
         Area;
-        % ElementMat;
-        % FaceToNode;
-        % NodeToFace;
-        % ElementToFace;
-    end
-    
-    properties (Access = private)
-        % Area;
-        % Convergence;
-        % Velocity;
-        % Adjecency;
-        % Boundary;
-        % Normal;
-        % Edge;
-        % Iteration;
-        % ElemMat;
-        % BndMat;
-        % eps; 
-        % eta; 
-        % Triangulate;
-        % Laplacian;
-        % Movie;
-        % MovieStart;
-        % CollapseTol;
-        % ConvNorm;
-        % ShowProcess;
-        % Colormap;
-        % LineStyle;
-        % Image;
-        % SimplifyTol;
-        % Hmesh;
-        % STLFile;
-        % MatlabMeshType = 'linear';
+        ShapeFnc;
+        ElemNDof;
     end
     
 %--------------------------------------------------------------------------
@@ -70,6 +38,7 @@ methods
 %--------------------------------------------------------------- Mesh Class
 function obj = Mesh(Input,varargin) 
     
+    obj.NElem     = 500;
     obj.options   = meshoptions;    
     obj.solver    = solveroptions;
     obj.geometry  = struct;
@@ -82,9 +51,10 @@ function obj = Mesh(Input,varargin)
        [~,~,ext] = fileparts(Input);
        if strcmp(ext,'.stl')
            if strcmp(varargin{1},'Hmesh')
-               obj.Hmesh = varargin{2};
+               obj.options.Hmin = varargin{2}(1);
+               obj.options.Hmax = varargin{2}(1);
            else
-               error('Requested inputs is Hmesh with [Hgrad,Hmin,Hmax]');
+               error('Requested inputs is Hmesh with [Hmin,Hmax]');
            end
            warning off % Matlab, please fix your stuff...
            [v,f] = GenerateMeshSTL(obj,Input);
@@ -92,18 +62,18 @@ function obj = Mesh(Input,varargin)
            Input = v;
            varargin{1} = f;
            obj.options.STLFile         = struct;
-           obj.STLFile.Node    = v;
-           obj.STLFile.Element = f;
+           obj.options.STLFile.Node    = v;
+           obj.options.STLFile.Element = f;
        elseif strcmp(ext,'.obj')
            [v,f] = objreader(Input);
        elseif strcmp(ext,'.png') || strcmp(ext,'.jpg') 
-           obj.options.Dimension   = 2;
            obj.Type  = 'C2T3'; 
-           obj.Image = rgb2gray(imread(Input));
+           obj.options.Image     = rgb2gray(imread(Input));
+           obj.options.Dimension = 2;
        else, cout('err','* extension not recognized');
        end
        
-       if isempty(obj.options.Image) && isempty(obj.STLFile)  
+       if isempty(obj.options.Image) && isempty(obj.options.STLFile)  
         obj.Node    = v;
         obj.NNode   = length(v);
         obj.Element = num2cell(f,2);
@@ -144,7 +114,7 @@ function obj = Mesh(Input,varargin)
        
        [Pc,~] = computeCentroid(obj,obj.Element,v); 
        
-       obj.options.MaxIteration = -1;
+       obj.solver.MaxIteration = -1;
        obj.Center = Pc;
        obj.Sdf = @(x) -1*ones(length(Pc),1);
        
@@ -155,7 +125,7 @@ function obj = Mesh(Input,varargin)
        obj.NElem = 200;
        
     elseif isa(Input,'Sdf')
-       obj.Sdf  = @(x) Input.eval(x);
+       obj.Sdf  = Input;
        obj.NElem = 200;
        if ~isempty(Input.BdBox)
           obj.BdBox = Input.BdBox;
@@ -173,7 +143,7 @@ function obj = Mesh(Input,varargin)
     for ii = 1:2:length(varargin)
         if strcmp(varargin{ii},'Quads')
             N = num2cell(varargin{ii+1});
-            obj.Center = Quads(obj.BdBox,N{:});
+            obj.Center = quadpoints(obj.BdBox,N{:});
             obj.Type   = 'C2Q4';
         elseif strcmp(varargin{ii},'Hexahedron')
             N = num2cell(varargin{ii+1});
@@ -186,6 +156,8 @@ function obj = Mesh(Input,varargin)
         else
             if isprop(obj.options,varargin{ii})
                 obj.options.(varargin{ii}) = varargin{ii+1};
+            elseif isprop(obj.solver,varargin{ii})
+                obj.solver.(varargin{ii}) = varargin{ii+1};
             else
                 obj.(varargin{ii}) = varargin{ii+1};
             end
@@ -200,6 +172,7 @@ function obj = Mesh(Input,varargin)
         obj.Type = 'C3T3'; 
     end
     
+    assert(~isempty(obj.BdBox), 'Bounding box must be defined via BdBox.');
     obj.Dim = 0.5*numel(obj.BdBox);
     
     if ~isempty(obj.options.Image)
@@ -232,7 +205,13 @@ function Mesh = set(Mesh, varargin)
             Mesh.Center = Quads(Mesh.BdBox, N{:});
             Mesh.Type = 'C2Q2';
         else
-            Mesh.(varargin{ii}) = varargin{ii + 1};
+            if isprop(Mesh.options,varargin{ii})
+                Mesh.options.(varargin{ii}) = varargin{ii+1};
+            elseif isprop(Mesh.solver,varargin{ii})
+                Mesh.solver.(varargin{ii}) = varargin{ii+1};
+            else
+                Mesh.(varargin{ii}) = varargin{ii+1};
+            end
         end
 
     end
@@ -253,188 +232,270 @@ function varargout = get(Mesh, varargin)
     end
 
 end
-%------------------------------------------------------------- get boundary
-function varargout = getBoundary(Mesh)
-    varargout{1} = Mesh.Boundary;
-end
-%-------------------------------------------------------------- get normal
-function varargout = getNormal(Mesh)
-    varargout{1} = Mesh.Normal;
-end
 %---------------------------------------------------------------------- set
 function Mesh = generate(Mesh, varargin)
 
-for ii = 1:2:length(varargin)
-    if strcmp(varargin{ii},'Quads')
-        N = num2cell(varargin{ii+1});
-        Mesh.Center = Quads(Mesh.BdBox,N{:});
-        Mesh.Type = 'C2Q2';
-    else
-        Mesh.(varargin{ii}) = varargin{ii+1};
-    end
-end 
+    for ii = 1:2:length(varargin)
 
-if isempty(Mesh.Center)
-    Pc = randomPointSet(Mesh); 
-elseif strcmp(Mesh.Type,'C3H8')    
-    Pc = Mesh.Center; 
-    Mesh.NElem = length(Pc);
-elseif strcmp(Mesh.Type,'C2Q4')    
-    if ~isempty(Mesh.Center) 
-        Pc = Mesh.Center; 
-        Mesh.NElem = size(Pc,1);
-    else
-        return;
-    end
-elseif ~isempty(Mesh.options.STLFile)
-    return;
-else
-    %Mesh.MaxIteration = 1;
-    Pc = Mesh.Center; 
-    d = Mesh.Sdf(Pc);
-    Pc = Pc(d(:,end)<0,:);  
-    Mesh.NElem = length(Pc);
-end
+        if strcmp(varargin{ii}, 'Quads')
+            N = num2cell(varargin{ii + 1});
+            Mesh.Center = quadpoints(Mesh.BdBox, N{:});
+            Mesh.Type = 'C2Q2';
+        else
 
-% a-prioiri area estimate
-if numel(Mesh.BdBox) < 6 
-Anew = (Mesh.BdBox(2)-Mesh.BdBox(1))*(Mesh.BdBox(4)-Mesh.BdBox(3));
-else
-Anew = (Mesh.BdBox(2)-Mesh.BdBox(1))*(Mesh.BdBox(4)-Mesh.BdBox(3))*...
-       (Mesh.BdBox(6)-Mesh.BdBox(5));
-end
-
-if Mesh.options.MaxIteration < 0
-    Mesh.solver.Flag = 1;
-    f = Mesh.Element;
-    v = Mesh.Node;
-else
-    Mesh.solver.Flag = 0;
-end
-
-% loyd's algorithm 
-while Mesh.solver.Flag == 0
-  
-  % update seeding points
-  P = Pc;
-  
-  % reflection of seedings
-  Rp = pointSetReflect(Mesh,P,Anew); 
-  
-  % bounding box seedings 
-  Rb = boundingReflect(Mesh);
-
-  % generate Voronoi tesselation
-  [v, f] = voronoin([P;Rp;Rb],{'Qt','Pp'});   
-  
-  % compute centroid and area
-  [Pc, A] = computeCentroid(Mesh,f,v); 
-  
-  % compute velocity
-%  Mesh.Velocity = vecnorm((P - Pc)')';
-  
-  Anew = sum(abs(A));
-
-  Mesh.solver.Residual = sqrt(sum((A.^2).*sum((Pc-P).*(Pc-P),2))) *     ...
-      Mesh.NElem/(Anew^1.5);
-  
-  % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
-  %     .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
-  
-  Mesh = CheckConvergence(Mesh);
-
-  Mesh.solver.Iteration = Mesh.solver.Iteration + 1;
-  
-end
-
-f = f(1:Mesh.NElem);
-
-[v,f] = RemoveDuplicates(Mesh,v,f);
-[v,f] = ExtractNode(Mesh,v,f);
-
-if Mesh.Dim < 3
-    [v,f] = CollapseEdges(Mesh,v,f); 
-    [v,f] = ResequenceNodes(Mesh,v,f);
-end
-
-if strcmp(Mesh.Type,'C3H8')
-    [v,f] = HexahedronOrder(Mesh,v,f);
-end
-
-if Mesh.options.Triangulate
-    Mesh.Node    = v;
-    Mesh.Element = f;
-    
-    [v,f] = MeshTriangulation(Mesh,P,v,f,length(f), length(v));
-    [v,f] = ResequenceNodes(Mesh,v,f);
-    
-    Mesh.NElem = length(f);
-    Mesh.NNode = length(v);  
-    Mesh.Node    = v;
-    Mesh.Element = f;
-end
-
-[Pc,A] = computeCentroid(Mesh,f,v); 
-
-Mesh.Center  = Pc;
-Mesh.Node    = v;
-Mesh.Element = f;
-Mesh.NNode   = length(v);
-Mesh.NElem   = length(f);
-Mesh.Area    = A;
-
-Mesh = ElementAdjecency(Mesh);
-
-if Mesh.Dim < 3
-    Mesh.geometry.BndMat = ConstructBounds(Mesh);
-else
-    List = (1:Mesh.NNode).';
-    Bnd  = [];
-    if ~isempty(Mesh.SDF)
-        for ii = 1:size(Mesh.geometry.ElemMat,1)
-            Face = Mesh.geometry.ElemMat(ii,1:end-1).';
-            D = Mesh.Sdf(Mesh.Node(Face,:));
-
-            if sum(abs(D(:,end))) < 1e-3
-                Bnd = [Bnd; Face.'];
+            if isprop(Mesh.options, varargin{ii})
+                Mesh.options.(varargin{ii}) = varargin{ii + 1};
+            else
+                Mesh.(varargin{ii}) = varargin{ii + 1};
             end
+
         end
-        
+
     end
+
+    if isempty(Mesh.Center)
+        Pc = randomPointSet(Mesh);
+    elseif strcmp(Mesh.Type, 'C3H8')
+        Pc = Mesh.Center;
+        Mesh.NElem = length(Pc);
+    elseif strcmp(Mesh.Type, 'C2Q4')
+
+        if ~isempty(Mesh.Center)
+            Pc = Mesh.Center;
+            Mesh.NElem = size(Pc, 1);
+        else
+            return;
+        end
+
+    elseif ~isempty(Mesh.options.STLFile)
+        return;
+    elseif ~isempty(Mesh.options.Image)
+        Mesh.solver.MaxIteration = -1;
+    else
+        %Mesh.MaxIteration = 1;
+        Pc = Mesh.Center;
+        d = Mesh.Sdf.eval(Pc);
+        Pc = Pc(d(:, end) < 0, :);
+        Mesh.NElem = length(Pc);
+    end
+
+    % a-prioiri area estimate
+    if numel(Mesh.BdBox) < 6
+        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * (Mesh.BdBox(4) - Mesh.BdBox(3));
+    else
+        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * (Mesh.BdBox(4) - Mesh.BdBox(3)) * ...
+            (Mesh.BdBox(6) - Mesh.BdBox(5));
+    end
+
+    if Mesh.solver.MaxIteration < 0
+        Mesh.solver.Flag = 1;
+        f = Mesh.Element;
+        v = Mesh.Node;
+    else
+        Mesh.solver.Flag = 0;
+    end
+
+    % loyd's algorithm
+    while Mesh.solver.Flag == 0
+
+        % update seeding points
+        P = Pc;
+
+        % reflection of seedings
+        Rp = pointSetReflect(Mesh, P, Anew);
+
+        % bounding box seedings
+        Rb = boundingReflect(Mesh);
+
+        % generate Voronoi tesselation
+        [v, f] = voronoin([P; Rp; Rb], {'Qt', 'Pp'});
+
+        % compute centroid and area
+        [Pc, A] = computeCentroid(Mesh, f, v);
+
+        % compute velocity
+        %  Mesh.Velocity = vecnorm((P - Pc)')';
+
+        Anew = sum(abs(A));
+
+        Mesh.solver.Residual = sqrt(sum((A .^ 2) .* sum((Pc - P) .* (Pc - P), 2))) * ...
+            Mesh.NElem / (Anew ^ 1.5);
+
+        % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
+        %     .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
+
+        Mesh = CheckConvergence(Mesh);
+
+        Mesh.solver.Iteration = Mesh.solver.Iteration + 1;
+
+    end
+
+    f = f(1:Mesh.NElem);
+
+    [v, f] = RemoveDuplicates(Mesh, v, f);
+    [v, f] = ExtractNode(Mesh, v, f);
+
+    if Mesh.Dim < 3
+        [v, f] = CollapseEdges(Mesh, v, f);
+        [v, f] = ResequenceNodes(Mesh, v, f);
+    end
+
+    if strcmp(Mesh.Type, 'C3H8')
+        [v, f] = HexahedronOrder(Mesh, v, f);
+    end
+
+    if Mesh.options.Triangulate
+        Mesh.Node = v;
+        Mesh.Element = f;
+
+        [v, f] = MeshTriangulation(Mesh, P, v, f, length(f), length(v));
+        [v, f] = ResequenceNodes(Mesh, v, f);
+
+        Mesh.NElem = length(f);
+        Mesh.NNode = length(v);
+        Mesh.Node = v;
+        Mesh.Element = f;
+    end
+
+    [Pc, A] = computeCentroid(Mesh, f, v);
+
+    Mesh.Center = Pc;
+    Mesh.Node = v;
+    Mesh.Element = f;
+    Mesh.NNode = length(v);
+    Mesh.NElem = length(f);
+    Mesh.Area = A;
+
+    switch (Mesh.Type)
+        case ('C2PX'), Mesh.ShapeFnc = tabulateshapefunctions(f);
+        case ('C2T3'), Mesh.ShapeFnc = tabulateshapefunctions(f);
+        case ('C2Q4'), Mesh.ShapeFnc = tabulateshapefunctions(f);
+            %case('C3T3'), tab = TabulateShapeFunctions(tab);
+        case ('C3H8'), tab = TabulateShapeFunctionsC3H8(tab);
+        case ('C3T4'), tab = TabulateShapeFunctionsC3T4(tab);
+        otherwise , Mesh.ShapeFnc = tabulateshapefunctions(f);
+    end
+
+    Mesh.ElemNDof = Mesh.Dim * cellfun(@length, f);
+    Mesh = ElementAdjecency(Mesh);
+
+    if Mesh.Dim < 3
+        Mesh.geometry.BndMat = ConstructBounds(Mesh);
+    end
+
+    % if strcmp(Mesh.Type,'C3T3') || strcmp(Mesh.Type,'C2T3')
+    %     list  = (1:Mesh.NNode).';
+    %     Bnd   = vertcat(Mesh.geometry.BndMat{:});
+    %     Pfix  = unique(Bnd(:));
+    %     Pfree = setdiff(list,Pfix);
+    %     N2F   = Mesh.geometry.NodeToFace;
+    %
+    %     f = Mesh.Element;
+    %     v = Mesh.Node;
+    %     dv = v;
+    %     dvm = mean(abs(dv(:,1)) + abs(dv(:,2)));
+    %
+    %     jj = 1;
+    %     while dvm >= 1e-3 && jj < 150
+    %
+    %        [Pc,A] = computeCentroid(Mesh,f,v);
+    %        dv = v*0;
+    %
+    %        for jj = 1:numel(Pfree)
+    %            id = Pfree(jj);
+    %            Am = diag(N2F(:,id))*A;
+    %            dv(id,:) = mean(diag(Am)*((Pc - v(id,:))),1)/(sum(Am)^2);
+    %        end
+    %
+    %        dvm = mean(abs(dv(:,1)) + abs(dv(:,2)));
+    %        v(Pfree,:) = v(Pfree,:) + dv(Pfree,:);
+    %        jj = jj + 1;
+    %     end
+    %
+    %     Mesh.Node = v;
+    % end
 end
 
-if strcmp(Mesh.Type,'C3T3') || strcmp(Mesh.Type,'C2T3')
-    list  = (1:Mesh.NNode).';
-    Bnd = vertcat(Mesh.geometry.BndMat{:});
-    Pfix  = unique(Bnd(:));
-    Pfree = setdiff(list,Pfix);
-    N2F = Mesh.FaceToNode;
-    
-    f = Mesh.Element;
+%---------------------------------------------------------------------- set
+function Mesh = removeElements(Mesh,varargin)
+
     v = Mesh.Node;
-    dv = v;
-    dvm = mean(abs(dv(:,1)) + abs(dv(:,2)));
-    
-    jj = 1;
-    while dvm >= 1e-3 && jj < 150
-        
-       [Pc,A] = computeCentroid(Mesh,f,v);  
-       dv = v*0;
-       
-       for jj = 1:numel(Pfree)
-           id = Pfree(jj);
-           Am = diag(N2F(:,id))*A;
-           dv(id,:) = mean(diag(Am)*((Pc - v(id,:))),1)/(sum(Am)^2);
-       end
-       
-       dvm = mean(abs(dv(:,1)) + abs(dv(:,2)));
-       v(Pfree,:) = v(Pfree,:) + dv(Pfree,:);
-       jj = jj +1;
-    end
-    
-    Mesh.Node  = v;
+    f = Mesh.Element;
+
+    I = varargin{1};
+    keepList = setdiff(1:Mesh.NElem,I);
+    f = f(keepList);
+    Mesh.NElem = numel(f);
+
+    [v,f] = ResequenceNodes(Mesh,v,f);
+    [Pc,A] = computeCentroid(Mesh,f,v); 
+
+    Mesh.Center  = Pc;
+    Mesh.Node    = v;
+    Mesh.Element = f;
+    Mesh.NNode   = length(v);
+    Mesh.NElem   = length(f);
+    Mesh.Area    = A;
+
+    Mesh = ElementAdjecency(Mesh);
+    Mesh.ElemNDof = Mesh.Dim * cellfun(@length, f);
+    Mesh.geometry.BndMat = ConstructBounds(Mesh);
+end
+%---------------------------------------------------------------------- set
+function [P] = query(Mesh,varargin)
+
+PS1 = varargin{1};
+PS2 = Mesh.Center;
+PS3 = Mesh.Node;
+Nsp = size(PS1,1);
+Shp = Mesh.ShapeFnc;
+
+d = cell(Nsp,1);    
+
+% get closest neighbors with element centers
+I = knnsearch(PS2,PS1);
+
+for ii = 1:Nsp
+   el = Mesh.Element{I(ii)};
+   Vsp = PS3(el,:);  % points spanned by element
+   Vin = PS1(ii,:);  % point in element
+   
+   % compute shape function jacobian transformation
+   J0 = Vsp.'*Shp{numel(el)}.dNdxi(:,:,1);
+   
+   V1 = ((J0)\Vsp.').';     % transform elements to reference config.
+   dv = mean(V1,1);
+   V1 = V1 - dv;            % pull to origin
+   V2 = ((J0)\Vin.').'- dv; % transform linepoint to reference config.
+
+   % recover angle
+   th = atan2(V2(2),-V2(1));
+   r  = sqrt(dot(V2,V2));
+   
+   L = [0,0; r*cos(pi+th),-r*sin(pi+th)]; % draw line to point 
+   P = [V1;V1(1,:)];   
+   [xc, yc] = intersections(P(:,1),P(:,2),L(:,1),L(:,2)); 
+   
+   if isempty(xc) % outside element
+    N = Shp{numel(el)}.fnc(r*[cos(th),sin(th)]);
+   else % inside element    
+    % find line intersection on boundary of element
+    N = Shp{numel(el)}.fnc([-xc,yc]);   
+   end
+   
+   % assemble distance filter matrix based on ShpFnc
+   if numel(el) == 3
+    d{ii} = [repmat(ii,numel(el),1),[el(2);el(1);el(3)],(N)];
+   else
+    d{ii} = [repmat(ii,numel(el),1),[el(end-1:-1:1).';el(end)],(N)];   
+   end
+   
 end
 
+d = cell2mat(d); 
+
+P = sparse(d(:,1),d(:,2),d(:,3),Nsp,Mesh.NNode);
+P = spdiags(1./sum(P,2),0,size(P,1),size(P,1))*P;
 end
 %---------------------------------------------------------------- show mesh
 function h = show(Mesh,varargin)
@@ -448,17 +509,21 @@ figure(101);
 
 % generate elemental matrices for plotting
 AreaC = sum(abs(Mesh.Area(:)))/(0.5*Mesh.NElem)+1e-3;
-Mesh  = ElementAdjecency(Mesh);
+if ~isfield(Mesh.geometry,'ElemMat');
+    Mesh = ElementAdjecency(Mesh);
+end
+
 fs    = 'flat';
 
-switch(Request)
-    case('SDF'),      Z = Mesh.Sdf(Mesh.Node); Z = Z(:,end);
-    case('Velocity'), Z = (Mesh.Velocity')'; caxis([0 0.01]); 
-    case('Gradient'), Z = GradientField(Mesh,Mesh.Node);
-    case('Node'),     Z = varargin{2};
-    case('Element'),  Z = varargin{2};
-    case('Holes'),    Z = zeros(Mesh.NNode,1);
-    case('Area'),     Z = abs(Mesh.Area); caxis([0, AreaC]);
+switch(lower(Request))
+    case('sdf'),      Z = Mesh.Sdf.eval(Mesh.Node); Z = Z(:,end); fs = 'interp';
+    case('velocity'), Z = (Mesh.Velocity')'; clim([0 0.01]); 
+    case('gradient'), Z = GradientField(Mesh,Mesh.Node);
+    case('node'),     Z = varargin{2};
+    case('element'),  Z = varargin{2};
+    case('holes'),    Z = zeros(Mesh.NNode,1);
+    case('area'),     Z = abs(Mesh.Area); clim([0, AreaC]);
+    case('field'),    Z = varargin{2}; fs = 'interp';
     otherwise;        Z = zeros(Mesh.NNode,1);
 end
 
@@ -466,7 +531,11 @@ if ~strcmp(Request,'Node') && ~strcmp(Request,'Element') ...
         && ~strcmp(Request,'Holes')
     
 cla; axis equal; axis off; hold on;
-    
+
+if strcmpi(fs,'flat')
+    fs = Mesh.options.Color;
+end
+
 % plot tesselation
 h{1} = patch('Faces',Mesh.geometry.ElemMat,'Vertices',Mesh.Node,            ...
     'FaceVertexCData',Z,'Facecolor',fs,'LineStyle',Mesh.options.LineStyle,  ...
@@ -508,40 +577,13 @@ axis(Mesh.BdBox);
 axis tight;
 
 end
-%----------------------------------------------------------------- show SDF
-function showSDF(Mesh,varargin)
-Bd = 1.05*Mesh.BdBox; 
-Q  = 250;
-xmin = Bd(1); xmax = Bd(2); 
-ymin = Bd(3); ymax = Bd(4); 
-x = linspace(xmin,xmax,Q);
-y = linspace(ymin,ymax,Q);
-[X,Y] = meshgrid(x,y);
-
-P = [X(:),Y(:)];
-D = Mesh.Sdf(P);
-Dist = reshape(D(:,end),[Q, Q]);
-cla;
-DistBnd = -wthresh(-Dist,'h',1e-6);
-surf(x,y,Dist,'linestyle','none'); hold on;
-contour3(X,Y,DistBnd,5,'w-','linewidth',1);
-contour(X,Y,Dist,[0 1e-6],'w-','linewidth',2); 
-colormap(Mesh.options.ColorMap);
-caxis([-1,2 + 1e-6]);
-axis equal;
-axis off;
-plotbox;
-set(gca, 'YDir','normal');
-view(0,90);
+%--------------------------------------------------------------- find nodes
+function NodeList = findNodes(Mesh,Request)
+    NodeList = findNodeMesh(Mesh.Node,Request);
 end
 %--------------------------------------------------------------- find nodes
-function NodeList = FindNodes(Mesh,Request)
-    NodeList = FindNodes(Mesh.Node,Request);
-end
-%--------------------------------------------------------------- find nodes
-function ElementList = FindElements(Mesh,Request)
-    n = Mesh.Center;
-    ElementList = FindNodes(n,Request);
+function ElementList = findElements(Mesh,varargin)
+    ElementList = findNodeMesh(Mesh.Center,varargin{:});
 end
 %---------------------------------------------------------- find boundaries
 function BndList = ConstructBounds(Mesh)
@@ -605,7 +647,7 @@ while(Ctr < Mesh.NElem)
     for ii = 1:Mesh.Dim
         Y(:,ii) = (B(2*ii)-B(2*ii-1))*rand(Mesh.NElem,1)+B(2*ii-1);
     end
-    d = Mesh.Sdf(Y);
+    d = Mesh.Sdf.eval(Y);
     I = find(d(:,end)<0);               
     NumAdded = min(Mesh.NElem-Ctr,length(I));
     P(Ctr+1:Ctr+NumAdded,:) = Y(I(1:NumAdded),:);
@@ -615,19 +657,19 @@ end
 %--------------------------------------------------------- reflect pointset
 function Rp = pointSetReflect(Mesh,P,A)
 Alpha = 1.5*(A/Mesh.NElem)^(1/2);
-d = Mesh.Sdf(P);  
+d = Mesh.Sdf.eval(P);  
 
 % number of assigned boundary segments
-NBdrySegs = (size(d,2)-1)*2;   
-eps = Mesh.options.StepTolerance;
+NBdrySegs = (size(d,2)-1);   
+eps = Mesh.solver.StepTolerance;
 
 if Mesh.Dim == 2
-    n1 = (Mesh.Sdf(P+repmat([eps,0],Mesh.NElem,1))-d)/eps;
-    n2 = (Mesh.Sdf(P+repmat([0,eps],Mesh.NElem,1))-d)/eps;
+    n1 = (Mesh.Sdf.eval(P+repmat([eps,0],Mesh.NElem,1))-d)/eps;
+    n2 = (Mesh.Sdf.eval(P+repmat([0,eps],Mesh.NElem,1))-d)/eps;
 else
-    n1 = (Mesh.Sdf(P+repmat([eps,0,0],Mesh.NElem,1))-d)/eps;
-    n2 = (Mesh.Sdf(P+repmat([0,eps,0],Mesh.NElem,1))-d)/eps;
-    n3 = (Mesh.Sdf(P+repmat([0,0,eps],Mesh.NElem,1))-d)/eps;
+    n1 = (Mesh.Sdf.eval(P+repmat([eps,0,0],Mesh.NElem,1))-d)/eps;
+    n2 = (Mesh.Sdf.eval(P+repmat([0,eps,0],Mesh.NElem,1))-d)/eps;
+    n3 = (Mesh.Sdf.eval(P+repmat([0,0,eps],Mesh.NElem,1))-d)/eps;
 end
 
 % logical index of seeds near the boundary
@@ -643,7 +685,7 @@ if Mesh.Dim == 3
     Rp(:,3) = P3(I)-2*n3(I).*d(I);  
 end
 
-d_R_P = Mesh.Sdf(Rp);
+d_R_P = Mesh.Sdf.eval(Rp);
 if Mesh.NElem > 1 % temporary fix
     J  = abs(d_R_P(:,end))>=Mesh.options.Eta*abs(d(I))                      ...
         & d_R_P(:,end)>0;
@@ -943,7 +985,7 @@ El = Mesh.Element(1:Mesh.NElem)';
 if Mesh.Dim == 3
 nodeset = cellfun(@(X) Mesh.Node(X,:),Mesh.Element,'UniformOutput',false);
 faceEl  = cellfun(@(X) convhulln(X,{'Qt','Pp'}),nodeset,'UniformOutput',false);
-faceDis = cellfun(@(V,F,E) CollectCoplanar(V,F,E),...
+faceDis = cellfun(@(V,F,E) collectCoplanar(V,F,E),...
            nodeset,faceEl,Mesh.Element,'UniformOutput',false);
 IdEl = cellfun(@(X,Y) Y*ones(size(X,1),1),faceDis,...
         num2cell(1:Mesh.NElem,1).','UniformOutput',false);       
@@ -975,7 +1017,7 @@ function [Node,Element] = GenerateMeshImage(Mesh,Image)
     Xscale = (B(2)-B(1))/size(Image,2);
     Yscale = (B(4)-B(3))/size(Image,1);
     
-    simplify_tol = Mesh.SimplifyTol;
+    simplify_tol = Mesh.options.SimplificationTolerance;
     
     img = Image <= 240;
     img = fliplr(img.');
@@ -994,23 +1036,21 @@ function [Node,Element] = GenerateMeshImage(Mesh,Image)
     
     for ii=1:length(c_cell0)
         c_tmp = c_cell0{ii};
-        c_red = decimatePoly(c_tmp,[simplify_tol, 2],false);
+        c_red = decimatepolygon(c_tmp,[simplify_tol, 2],false);
         if (nnz(c_red(:,1))>0)&&(nnz(c_red(:,2))>0)
             c_cell{end+1,1} = [Xscale*c_red(:,1), (Yscale)*c_red(:,2)];
         end
     end
     
-    if isempty(Mesh.Hmesh)
+    if isempty(Mesh.options.Hmin) || isempty(Mesh.options.Hmax)
         AreaBd = (B(2)-B(1))*(B(4)-B(3));
-        Hmin = sqrt(AreaBd/Mesh.NElem);
-        Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
-        Mesh.Hmesh = [1,Hmin,Hmax];
+        Mesh.options.Hmin = sqrt(AreaBd/Mesh.NElem);
+        Mesh.options.Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
+        
     end
-    
-    H = Mesh.Hmesh;
 
-    Tesselation = triangulationCreate(c_cell, H(1), H(2), H(3),...
-        Mesh.MatlabMeshType);
+    Tesselation = triangulationcreate(c_cell, 1, Mesh.options.Hmin,         ...
+        Mesh.options.Hmax, Mesh.options.ElementOrder);
     
     Node    = Tesselation.Nodes.';    
     Element = Tesselation.Elements.';
@@ -1024,8 +1064,8 @@ function [Node,Element] = GenerateMeshSTL(Mesh,name)
    model = createpde(3);
    importGeometry(model,name);
    msh = generateMesh(model,'GeometricOrder','linear',...
-         'Hgrad', Mesh.Hmesh(1), 'Hmin', Mesh.Hmesh(2), 'Hmax', Mesh.Hmesh(3));
-    Node = msh.Nodes';
+         'Hgrad', 1, 'Hmin', Mesh.options.Hmin, 'Hmax', Mesh.options.Hmax);
+    Node    = msh.Nodes';
     Element = msh.Elements';
 
 end
@@ -1059,8 +1099,6 @@ else
     else
        A0 = vertcat(Mesh.Element{:});
     end
-
-    %A = RecoverOuterFaces(A0);
     
     Mesh.geometry.ElemMat = A0;
     A   = vertcat(Mesh.Element{:});
@@ -1068,7 +1106,7 @@ else
     triID = (1:Mesh.NElem).';
     MaxNVer = max(cellfun(@numel,num2cell(tri,2)));
     edges = cellfun(@numel,num2cell(tri,2));
-    Mesh.ElementToFace = sparse(1:length(A),triID,1);
+    Mesh.geometry.ElementToFace = sparse(1:length(A),triID,1);
 end
 
 set = 1:n;
@@ -1133,7 +1171,7 @@ RGB = atan2(n2(:,end),n1(:,end));
 end
 %------------------------------------------------------ isotropic reduction
 function Mesh = CheckConvergence(Mesh)
-Criteria = (Mesh.solver.Residual > Mesh.solver.RelTolerance);
+Criteria = (Mesh.solver.Residual > Mesh.solver.AbsTolerance);
 
 if (Criteria && (Mesh.solver.Iteration < Mesh.solver.MaxIteration)) 
     Mesh.solver.Flag = 0;
@@ -1162,43 +1200,43 @@ end
 end
 
 end
+% %------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
+% function R = PlanarProjection(a)
+% a = a(:); b = [0;0;1];
+% v = cross(a,b); vs = [0,-v(3),v(2);v(3),0,-v(1);-v(2),v(1),0];
+% R = eye(3,3) + vs + vs*vs/(1+abs(dot(a,b))+1e-9);
+% end
 %------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
-function R = PlanarProjection(a)
-a = a(:); b = [0;0;1];
-v = cross(a,b); vs = [0,-v(3),v(2);v(3),0,-v(1);-v(2),v(1),0];
-R = eye(3,3) + vs + vs*vs/(1+abs(dot(a,b))+1e-9);
-end
-%------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
-function Poly = CollectCoplanar(Node,Element,Element0)
-%finding the vector span of triangle
-N = zeros(length(Element),3);
-for i = 1:length(Element)
-    v1 = Node(Element(i,2),:) - Node(Element(i,1),:);
-    v2 = Node(Element(i,3),:) - Node(Element(i,1),:);   
-    tmp = cross(v1,v2); N(i,:) = tmp/sqrt(tmp(1)^2 + tmp(2)^2 + tmp(3)^2);
-end
-
-[Norm,Ia] = uniquetol(N,1e-1,'ByRows',true,'OutputAllIndices', true);
-Nc = transpose(num2cell(Norm.',1));
-
-Rprj = cellfun(@(E) PlanarProjection(E),Nc,'UniformOutput',false); 
-NodeId = cellfun(@(E) unique(Element(E,:)),Ia,'UniformOutput',false); 
-
-Prj = cellfun(@(E,R)  R*transpose(Node(E,:)),NodeId,Rprj,'UniformOutput',false);
-Stitch = @(E) convhull(transpose(E(1:2,:)));
-
-Poly = cellfun(@(E) Stitch(E),Prj,'UniformOutput',false);
-Poly = cellfun(@(E,V) reshape(E(V),1,[]), NodeId, Poly,'UniformOutput',false);
-Poly = cellfun(@(E) Element0(E(:)), Poly,'UniformOutput',false);
-
-Poly = NaNPadding(Poly);
-Poly = vertcat(Poly{:}); 
-end
-%------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
-function A = NaNPadding(A0)
-A0 = reshape(A0,[],1); 
-MaxN = max(cellfun(@(E) size(E,2),A0));        
-PadWNaN = @(E) [E, NaN(size(E,1),MaxN- size(E,2))]; 
-A = cellfun(PadWNaN,A0,'UniformOutput',false);
-end
+% function Poly = CollectCoplanar(Node,Element,Element0)
+% %finding the vector span of triangle
+% N = zeros(length(Element),3);
+% for i = 1:length(Element)
+%     v1 = Node(Element(i,2),:) - Node(Element(i,1),:);
+%     v2 = Node(Element(i,3),:) - Node(Element(i,1),:);   
+%     tmp = cross(v1,v2); N(i,:) = tmp/sqrt(tmp(1)^2 + tmp(2)^2 + tmp(3)^2);
+% end
+% 
+% [Norm,Ia] = uniquetol(N,1e-1,'ByRows',true,'OutputAllIndices', true);
+% Nc = transpose(num2cell(Norm.',1));
+% 
+% Rprj = cellfun(@(E) PlanarProjection(E),Nc,'UniformOutput',false); 
+% NodeId = cellfun(@(E) unique(Element(E,:)),Ia,'UniformOutput',false); 
+% 
+% Prj = cellfun(@(E,R)  R*transpose(Node(E,:)),NodeId,Rprj,'UniformOutput',false);
+% Stitch = @(E) convhull(transpose(E(1:2,:)));
+% 
+% Poly = cellfun(@(E) Stitch(E),Prj,'UniformOutput',false);
+% Poly = cellfun(@(E,V) reshape(E(V),1,[]), NodeId, Poly,'UniformOutput',false);
+% Poly = cellfun(@(E) Element0(E(:)), Poly,'UniformOutput',false);
+% 
+% Poly = NaNPadding(Poly);
+% Poly = vertcat(Poly{:}); 
+% end
+% %------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
+% function A = NaNPadding(A0)
+% A0 = reshape(A0,[],1); 
+% MaxN = max(cellfun(@(E) size(E,2),A0));        
+% PadWNaN = @(E) [E, NaN(size(E,1),MaxN- size(E,2))]; 
+% A = cellfun(PadWNaN,A0,'UniformOutput',false);
+% end
 

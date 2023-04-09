@@ -1,0 +1,128 @@
+[
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  LocalsNHFastElastic_data.c -o build/glnxa64/LocalsNHFastElastic_data.o",
+    "file": "LocalsNHFastElastic_data.c",
+    "output": "build/glnxa64/LocalsNHFastElastic_data.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  rt_nonfinite.c -o build/glnxa64/rt_nonfinite.o",
+    "file": "rt_nonfinite.c",
+    "output": "build/glnxa64/rt_nonfinite.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  LocalsNHFastElastic_initialize.c -o build/glnxa64/LocalsNHFastElastic_initialize.o",
+    "file": "LocalsNHFastElastic_initialize.c",
+    "output": "build/glnxa64/LocalsNHFastElastic_initialize.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  LocalsNHFastElastic_terminate.c -o build/glnxa64/LocalsNHFastElastic_terminate.o",
+    "file": "LocalsNHFastElastic_terminate.c",
+    "output": "build/glnxa64/LocalsNHFastElastic_terminate.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  LocalsNHFastElastic.c -o build/glnxa64/LocalsNHFastElastic.o",
+    "file": "LocalsNHFastElastic.c",
+    "output": "build/glnxa64/LocalsNHFastElastic.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  eml_mtimes_helper.c -o build/glnxa64/eml_mtimes_helper.o",
+    "file": "eml_mtimes_helper.c",
+    "output": "build/glnxa64/eml_mtimes_helper.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  mtimes.c -o build/glnxa64/mtimes.o",
+    "file": "mtimes.c",
+    "output": "build/glnxa64/mtimes.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  eml_int_forloop_overflow_check.c -o build/glnxa64/eml_int_forloop_overflow_check.o",
+    "file": "eml_int_forloop_overflow_check.c",
+    "output": "build/glnxa64/eml_int_forloop_overflow_check.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  mrdivide_helper.c -o build/glnxa64/mrdivide_helper.o",
+    "file": "mrdivide_helper.c",
+    "output": "build/glnxa64/mrdivide_helper.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  repmat.c -o build/glnxa64/repmat.o",
+    "file": "repmat.c",
+    "output": "build/glnxa64/repmat.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  warning.c -o build/glnxa64/warning.o",
+    "file": "warning.c",
+    "output": "build/glnxa64/warning.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  qrsolve.c -o build/glnxa64/qrsolve.o",
+    "file": "qrsolve.c",
+    "output": "build/glnxa64/qrsolve.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  det.c -o build/glnxa64/det.o",
+    "file": "det.c",
+    "output": "build/glnxa64/det.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  colon.c -o build/glnxa64/colon.o",
+    "file": "colon.c",
+    "output": "build/glnxa64/colon.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  indexShapeCheck.c -o build/glnxa64/indexShapeCheck.o",
+    "file": "indexShapeCheck.c",
+    "output": "build/glnxa64/indexShapeCheck.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  interface/_coder_LocalsNHFastElastic_api.c -o build/glnxa64/_coder_LocalsNHFastElastic_api.o",
+    "file": "interface/_coder_LocalsNHFastElastic_api.c",
+    "output": "build/glnxa64/_coder_LocalsNHFastElastic_api.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  interface/_coder_LocalsNHFastElastic_mex.c -o build/glnxa64/_coder_LocalsNHFastElastic_mex.o",
+    "file": "interface/_coder_LocalsNHFastElastic_mex.c",
+    "output": "build/glnxa64/_coder_LocalsNHFastElastic_mex.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  round.c -o build/glnxa64/round.o",
+    "file": "round.c",
+    "output": "build/glnxa64/round.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  LocalsNHFastElastic_emxutil.c -o build/glnxa64/LocalsNHFastElastic_emxutil.o",
+    "file": "LocalsNHFastElastic_emxutil.c",
+    "output": "build/glnxa64/LocalsNHFastElastic_emxutil.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  interface/_coder_LocalsNHFastElastic_info.c -o build/glnxa64/_coder_LocalsNHFastElastic_info.o",
+    "file": "interface/_coder_LocalsNHFastElastic_info.c",
+    "output": "build/glnxa64/_coder_LocalsNHFastElastic_info.o"
+  },
+  {
+    "directory": "/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH/codegen/mex/LocalsNHFastElastic",
+    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/brandon/Documents/MATLAB/SorotokiCode/src/fem/mex/localsNH\" -I \"./interface\" -I \"/usr/local/MATLAB/R2021a/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=LocalsNHFastElastic_mex -c  /usr/local/MATLAB/R2021a/extern/version/c_mexapi_version.c -o build/glnxa64/c_mexapi_version.o",
+    "file": "/usr/local/MATLAB/R2021a/extern/version/c_mexapi_version.c",
+    "output": "build/glnxa64/c_mexapi_version.o"
+  }
+]
