@@ -427,7 +427,10 @@ function Mesh = removeElements(Mesh,varargin)
     f = f(keepList);
     Mesh.NElem = numel(f);
 
-    [v,f] = ResequenceNodes(Mesh,v,f);
+    %[Node0,Element0] = Rebuild(Mesh,v,f,cNode);
+    [v, f] = RemoveDuplicates(Mesh, v, f);
+    [v, f] = ExtractNode(Mesh, v, f);
+    [v, f] = ResequenceNodes(Mesh,v,f);
     [Pc,A] = computeCentroid(Mesh,f,v); 
 
     Mesh.Center  = Pc;
@@ -558,8 +561,8 @@ elseif strcmp(Request,'Node')
 elseif strcmp(Request,'Element')
     plot(Mesh.Center(Z,1),Mesh.Center(Z,2),'.','Color','r');  
 elseif strcmp(Request,'Holes')
-    for ii = 2:length(Mesh.BndMat)
-        B = Mesh.BndMat{ii};
+    for ii = 2:length(Mesh.geometry.BndMat)
+        B = Mesh.geometry.BndMat{ii};
         Xoffset = 0.012*(Mesh.BdBox(2)-Mesh.BdBox(1));
         Ctr = mean(Mesh.Node(unique(B(:)),:),1);
         if ii < 10
@@ -568,7 +571,8 @@ elseif strcmp(Request,'Holes')
             text(Ctr(1)-2*Xoffset,Ctr(2),num2str(ii));
         end
         Nds = Mesh.Node(B(:),:);
-        plot(Nds(:,1),Nds(:,2),'Color',col(4),'linewidth',1.5); hold on;
+        plot(Nds(2:end-1,1),Nds(2:end-1,2),...
+            'linewidth',2); hold on;
     end
 end
 
@@ -584,6 +588,10 @@ end
 %--------------------------------------------------------------- find nodes
 function ElementList = findElements(Mesh,varargin)
     ElementList = findNodeMesh(Mesh.Center,varargin{:});
+end
+%--------------------------------------------------------------- find nodes
+function EdgeList = findEdges(Mesh,varargin)
+    EdgeList = findEdgeMesh(Mesh,varargin{:});
 end
 %---------------------------------------------------------- find boundaries
 function BndList = ConstructBounds(Mesh)
