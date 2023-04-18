@@ -47,11 +47,11 @@ switch(Request)
     case('back');       x = Back(Node,BdBox,tol);
     case('middle');     x = Middle(Node,BdBox,varargin{end});
     case('topmid');     x = TopMid(Node,BdBox);
-    case('bottomMid');  x = BottomMid(Node,BdBox);
-    case('leftMid');    x = LeftMid(Node,BdBox,varargin{end});
-    case('rightMid');   x = RightMid(Node,BdBox);
-    case('topHalf');    x = TopHalf(Node,BdBox,tol);
-    case('botHalf');    x = BotHalf(Node,BdBox,tol);
+    case('bottommid');  x = BottomMid(Node,BdBox);
+    case('leftmid');    x = LeftMid(Node,BdBox,varargin{end});
+    case('rightmid');   x = RightMid(Node,BdBox);
+    case('tophalf');    x = TopHalf(Node,BdBox,tol);
+    case('bothalf');    x = BotHalf(Node,BdBox,tol);
     case('location');   x = Location(Node,BdBox,varargin{2:end});
     case('sdfe');       x = SignedFunctionEdge(Node,varargin{2:end},tol);
     case('sdf');        x = SignedFunction(Node,varargin{2:end},tol);
