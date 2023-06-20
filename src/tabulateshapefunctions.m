@@ -1,7 +1,7 @@
 function ShapeFnc = tabulateshapefunctions(Element)
 
-ElemNNode    = cellfun(@length,Element); 
-ShapeFnc = cell(max(ElemNNode),1);
+ElemNNode = cellfun(@length,Element); 
+ShapeFnc  = cell(max(ElemNNode),1);
 
 for nn = min(ElemNNode):max(ElemNNode)
     [W,Q] = PolyQuad(nn);
@@ -100,7 +100,7 @@ end
 
 %---------------------------------------------------- TRIANGULAR QUADRATURE
 function [weight,point] = TriQuad(precision)
-if nargin<1, precision = 1; end
+if nargin<1, precision = 0; end
 
 if (precision == 0)
     xw=...

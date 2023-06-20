@@ -34,7 +34,7 @@ classdef meshoptions
             obj.Quality             = 75;
             obj.Display             = false;
             obj.ElemMat             = -1;
-            obj.Eta                 = 0.9;
+            obj.Eta                 = 0.99;
             obj.Triangulate         = false;
             obj.Movie               = false;
             obj.MovieStart          = false;

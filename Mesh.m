@@ -272,7 +272,6 @@ function Mesh = generate(Mesh, varargin)
     elseif ~isempty(Mesh.options.Image)
         Mesh.solver.MaxIteration = -1;
     else
-        %Mesh.MaxIteration = 1;
         Pc = Mesh.Center;
         d = Mesh.Sdf.eval(Pc);
         Pc = Pc(d(:, end) < 0, :);
@@ -664,12 +663,12 @@ end
 end 
 %--------------------------------------------------------- reflect pointset
 function Rp = pointSetReflect(Mesh,P,A)
-Alpha = 1.5*(A/Mesh.NElem)^(1/2);
+Alpha = 3*(A/Mesh.NElem)^(1/2);
 d = Mesh.Sdf.eval(P);  
 
 % number of assigned boundary segments
 NBdrySegs = (size(d,2)-1);   
-eps = Mesh.solver.StepTolerance;
+eps = 1e-6;%Mesh.solver.StepTolerance;
 
 if Mesh.Dim == 2
     n1 = (Mesh.Sdf.eval(P+repmat([eps,0],Mesh.NElem,1))-d)/eps;
