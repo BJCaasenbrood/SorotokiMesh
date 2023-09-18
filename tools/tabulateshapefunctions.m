@@ -99,8 +99,8 @@ end
 end
 
 %---------------------------------------------------- TRIANGULAR QUADRATURE
-function [weight,point] = TriQuad(precision)
-if nargin<1, precision = 0; end
+function [weight, point] = TriQuad(precision)
+if nargin<1, precision = 1; end
 
 if (precision == 0)
     xw=...
