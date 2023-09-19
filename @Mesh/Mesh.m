@@ -62,6 +62,9 @@ function obj = Mesh(Input,varargin)
            obj.options.STLFile         = struct;
            obj.options.STLFile.Node    = v;
            obj.options.STLFile.Element = f;
+            
+           obj.ElemNDof = 3 * cellfun(@length, num2cell(f,2));
+
        elseif strcmp(ext,'.obj')
            [v,f] = objreader(Input);
        elseif strcmp(ext,'.png') || strcmp(ext,'.jpg') 
@@ -164,9 +167,7 @@ function obj = Mesh(Input,varargin)
     
     if obj.options.Triangulate
         obj.Type = 'C2T3'; 
-    end
-
-    if isempty(obj.Sdf)
+    elseif isempty(obj.Sdf)
         obj.Type = 'C3T3'; 
     end
     
@@ -189,7 +190,7 @@ function obj = Mesh(Input,varargin)
         obj.Sdf    = @(x) -1*ones(length(Pc),1);
         
     elseif ~isempty(obj.options.STLFile)
-        % not implemented yet
+        obj = obj.generate();
     end
 end
 
