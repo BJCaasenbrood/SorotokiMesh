@@ -24,7 +24,6 @@ function Mesh = generate(Mesh, varargin)
         Pc = Mesh.Center;
         Mesh.NElem = length(Pc);
     elseif strcmp(Mesh.Type, 'C2Q4')
-
         if ~isempty(Mesh.Center)
             Pc = Mesh.Center;
             Mesh.NElem = size(Pc, 1);
@@ -33,7 +32,7 @@ function Mesh = generate(Mesh, varargin)
         end
 
     elseif ~isempty(Mesh.options.STLFile)
-        return;
+        Mesh.solver.Flag = 1;
     elseif ~isempty(Mesh.options.Image)
         Mesh.solver.MaxIteration = -1;
     else
@@ -45,10 +44,12 @@ function Mesh = generate(Mesh, varargin)
 
     % a-prioiri area estimate
     if numel(Mesh.BdBox) < 6
-        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * (Mesh.BdBox(4) - Mesh.BdBox(3));
+        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * ...
+               (Mesh.BdBox(4) - Mesh.BdBox(3));
     else
-        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * (Mesh.BdBox(4) - Mesh.BdBox(3)) * ...
-            (Mesh.BdBox(6) - Mesh.BdBox(5));
+        Anew = (Mesh.BdBox(2) - Mesh.BdBox(1)) * ...
+               (Mesh.BdBox(4) - Mesh.BdBox(3)) * ...
+               (Mesh.BdBox(6) - Mesh.BdBox(5));
     end
 
     if Mesh.solver.MaxIteration < 0
@@ -81,9 +82,6 @@ function Mesh = generate(Mesh, varargin)
         % compute centroid and area
         [Pc, A] = computeCentroid(Mesh, f, v);
 
-        % compute velocity
-        %  Mesh.Velocity = vecnorm((P - Pc)')';
-
         Anew = sum(abs(A));
 
         Mesh.solver.Residual = sqrt(sum((A .^ 2) .* sum((Pc - P) .* (Pc - P), 2))) * ...
@@ -91,9 +89,6 @@ function Mesh = generate(Mesh, varargin)
 
         Mesh.solver.sol.tout = [Mesh.solver.sol.tout; Mesh.solver.Iteration];
         Mesh.solver.sol.yout = [Mesh.solver.sol.yout; abs(A(:)).'];    
-
-        % Mesh.Convergence = vappend(Mesh.Convergence,sqrt(sum((A.^2).*sum((Pc-P)...
-        %     .*(Pc-P),2)))*Mesh.NElem/(Anew^1.5));
 
         Mesh = CheckConvergence(Mesh);
 
@@ -141,9 +136,8 @@ function Mesh = generate(Mesh, varargin)
         case ('C2PX'), Mesh.ShapeFnc = tabulateshapefunctions(f);
         case ('C2T3'), Mesh.ShapeFnc = tabulateshapefunctions(f);
         case ('C2Q4'), Mesh.ShapeFnc = tabulateshapefunctions(f);
-            %case('C3T3'), tab = TabulateShapeFunctions(tab);
-        case ('C3H8'), tab = TabulateShapeFunctionsC3H8(tab);
-        case ('C3T4'), tab = TabulateShapeFunctionsC3T4(tab);
+        case ('C3H8'), Mesh.ShapeFnc = tabulateShapeFunctionsC3H8(f);
+        case ('C3T4'), Mesh.ShapeFnc = tabulateShapeFunctionsC3T4(f);
         otherwise , Mesh.ShapeFnc = tabulateshapefunctions(f);
     end
 
