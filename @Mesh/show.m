@@ -13,7 +13,7 @@ if ~isfield(Mesh.geometry,'ElemMat')
     Mesh = ElementAdjecency(Mesh);
 end
 
-fs    = 'flat';
+fs  = 'flat';
 
 switch(lower(Request))
     case('sdf'),      Z = Mesh.Sdf.eval(Mesh.Node); Z = Z(:,end); fs = 'interp';

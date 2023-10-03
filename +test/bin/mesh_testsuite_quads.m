@@ -9,7 +9,6 @@ clr;
 
 sdf = sRectangle(10,10);
 msh = Mesh(sdf,'Quads',[10,10]);
-%msh = Mesh(sdf,'NElem',300);
 msh = msh.generate();
 
 s = sCircle(2,[5,5]);

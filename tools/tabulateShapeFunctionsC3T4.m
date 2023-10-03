@@ -1,6 +1,16 @@
-function ShapeFnc = tabulateShapeFunctionsC3T4(Element)
+%TABULATESHAPEFUNCTIONSC3T4 Tabulate shape functions for a C3D4 tetrahedral element.
+% ShapeFnc = TABULATESHAPEFUNCTIONSC3T4(Element) takes a cell array Element, where each
+% element represents a different type of element and contains the number of nodes
+% for that element. It tabulates the shape functions for a C3D4 tetrahedral element
+% and returns them as a cell array ShapeFnc.
+%
+% Example:
+%   ShapeFnc = tabulateShapeFunctionsC3T4(Element);
+%   % ShapeFnc{4} contains the shape functions for a C3D4 tetrahedral element
 
-ElemNNode    = cellfun(@length,Element); 
+function ShapeFnc = tabulateShapeFunctionsC3T4
+
+ElemNNode = 4; 
 ShapeFnc = cell(max(ElemNNode),1);
 
 [W,Q] = Tetrahedron();

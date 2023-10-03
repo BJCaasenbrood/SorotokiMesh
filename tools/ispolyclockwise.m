@@ -1,7 +1,11 @@
+% ISPOLYCLOCKWISE - Check if a polygon is clockwise or counterclockwise
+%
+%   [b, a] = ispolyclockwise(x, y) checks the orientation of a polygon defined by
+%   the x and y coordinates. It returns a boolean value b indicating whether the
+%   polygon is clockwise (true) or counterclockwise (false), and the contour
+%   integral a.
+
 function  [b,a] = ispolyclockwise(x,y)
-%  Copyright (c) 1995 by Kirill K. Pankratov,
-%	kirill@plume.mit.edu.
-%	04/20/94, 05/20/95  
 
  % Make polygon closed ( even if it already is) .............
 x = [x(:); x(1)];

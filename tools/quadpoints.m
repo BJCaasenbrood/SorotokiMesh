@@ -1,3 +1,19 @@
+%QUADPOINTS Generate a grid of points within a specified bounding box.
+
+% Pc = QUADPOINTS(BdBox, Nx, Ny) generates a grid of points within a
+% specified bounding box. The bounding box is defined by BdBox, which is
+% a 1x4 vector containing the coordinates [B1, B2, B3, B4] of the bottom
+% left and top right corners of the box. The number of points in the x
+% and y directions are specified by Nx and Ny, respectively.
+
+% Example:
+% BdBox = [0, 1, 0, 1];
+% Nx = 10;
+% Ny = 5;
+% Pc = quadpoints(BdBox, Nx, Ny);
+
+% See also MESHGRID, STEPSPACE
+
 function Pc = quadpoints(BdBox,Nx,Ny)
 if nargin < 3, Ny = Nx;
 else, Nx = Nx^2; Ny = Ny^2;

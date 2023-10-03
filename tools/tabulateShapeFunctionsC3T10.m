@@ -1,6 +1,16 @@
-function fem = TabulateShapeFunctionsC3T10(fem)
+%TABULATESHAPEFUNCTIONSC3T10 Tabulate shape functions for a C3D10 tetrahedral element.
+% fem = TABULATESHAPEFUNCTIONSC3T10(Element) takes a cell array Element, which contains
+% the connectivity information of the tetrahedral elements, and tabulates the shape
+% functions for a C3D10 tetrahedral element. The tabulated shape functions are stored
+% in the fem struct.
+%
+% Example:
+%   fem = tabulateShapeFunctionsC3T10(Element);
+%   % fem.ShapeFnc{10} contains the shape functions for a C3D10 tetrahedral element
 
-ElemNNode    = cellfun(@length,fem.Element); 
+function fem = tabulateShapeFunctionsC3T10
+
+ElemNNode    = 10; 
 fem.ShapeFnc = cell(max(ElemNNode),1);
 
 [W,Q] = Tetrahedron();

@@ -1,7 +1,18 @@
+%POLYGRID Generate a grid of points within a polygon.
+%
+% [X,Y] = POLYGRID(NUM_POINTS, POLY_ORDER) generates a grid of points
+% within a polygon. The polygon is defined by the unit circle centered at
+% the origin. The number of points in the grid is specified by NUM_POINTS,
+% and the order of the polygon is specified by POLY_ORDER.
+%
+% Example:
+% num_points = 100;
+% poly_order = 5;
+% [X,Y] = polygrid(num_points, poly_order);
+%
+% See also MESHGRID, INPOLYGON
+
 function [X,Y] = polygrid(num_points, poly_order)
-% GENERATE_GRID Generates a uniform grid of points inside a unit polygon area
-%   [X,Y] = GENERATE_GRID(NUM_POINTS,POLY_ORDER) returns the X and Y coordinates 
-%   of NUM_POINTS uniformly distributed within a unit polygon of order POLY_ORDER.
 
 % Create the unit polygon
 theta = linspace(0, 2*pi, poly_order+1);

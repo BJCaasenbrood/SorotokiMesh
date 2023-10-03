@@ -1,5 +1,4 @@
-function mesh = triangulationCreate(c_cell, h_growth, h_min, h_max, type)
-%TRIANGULATION_CREATE Create a 2d triangulation from contours with holes.
+%TRIANGULATIONCREATE Create a 2d triangulation from contours with holes.
 %   [vertices, faces] = TRIANGULATION_CREATE(c_cell, h_growth, h_min, h_max)
 %   c_cell - cell array with the contours (cell of matrix)
 %   h_growth - growth rate of the mesh (scalar)
@@ -15,6 +14,7 @@ function mesh = triangulationCreate(c_cell, h_growth, h_min, h_max, type)
 %   2020 - BSD License.
 % for each contour, prepare the polygons
 
+function mesh = triangulationCreate(c_cell, h_growth, h_min, h_max, type)
 if nargin < 5,
     type = 'linear'
 end

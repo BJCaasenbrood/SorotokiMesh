@@ -1,3 +1,14 @@
+%QUADMESH Plot a quad mesh based on center locations.
+%
+% QUADMESH(CenterLocations) plots a quad mesh based on the specified
+% center locations. The center locations are given as a 1D vector,
+% CenterLocations, which represents the x or y coordinates of the center
+% points of each cell in the mesh.
+%
+% Example:
+% center_locations = [0, 1, 2];
+% quadmesh(center_locations);
+
 function quadmesh(center_locations)
     % Determine the cell size based on the spacing between center locations
     cell_size = center_locations(2) - center_locations(1);

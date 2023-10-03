@@ -1,5 +1,4 @@
-function [C_out,i_rem,CI]=decimatepolygon(C,opt,vis)
-% Reduce complexity of a 2D simple (i.e. non-self intersecting), closed 
+% DECIMATEPOLYGON Reduce complexity of a 2D simple (i.e. non-self intersecting), closed 
 % piecewise linear contour by specifying boundary offset tolerance.
 %
 % ******************************* IMPORTANT *******************************
@@ -46,6 +45,8 @@ function [C_out,i_rem,CI]=decimatepolygon(C,opt,vis)
 %     number of vertices has reached a user-defined value.
 %
 % AUTHOR: Anton Semechko (a.semechko@gmail.com)
+
+function [C_out,i_rem,CI]=decimatepolygon(C,opt,vis)
 %
 % Check input args
 if nargin<2, opt={}; end

@@ -9,7 +9,7 @@ f2 = sCircle(0.5);
 sdf1 = f1-f2;
 
 msh = Mesh(sdf1);
-msh = msh.generate('NElem',30);
+msh = msh.generate('NElem',60);
 
 msh.show();
 

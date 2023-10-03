@@ -1,19 +1,22 @@
-function x = FindEdgeMesh(Mesh,varargin)
-%FINDEDGE Returns a cell-list of nodes that form an edge.
+% FINDEDGEMESH - Find edges or holes in a mesh
 %
-%   x = FINDEDGE(Mesh, 'Hole', A)   -  Returns holes of index A
-%   x = FINDEDGE(Mesh, 'TopHole')   -  Returns holes at the top
-%   x = FINDEDGE(Mesh, 'AllHole')   -  Returns all holes
+%   x = FindEdgeMesh(Mesh, Request, varargin) finds edges or holes in a mesh
+%   based on the specified request.
+%       - Request: A string specifying the type of request. Available options are:
+%           - 'hole': Find all holes in the mesh.
+%           - 'tophole': Find the top holes in the mesh.
+%           - 'bottomHole': Find the bottom holes in the mesh.
+%           - 'allhole': Find all holes in the mesh (equivalent to 'hole').
+%           - 'boxhole': Find holes within a specified bounding box.
+%           - 'edgeselect': Find edges based on a selection criteria.
+%       - varargin: Additional input arguments depending on the request.
 %
-%   x = FINDEDGE(Mesh, 'EdgeSelect', P0, alpha) -  Returns an edge closest
-%       to point P0, and neighbouring edges within an angle limit <= alpha.
-%       alpha by default 90 degrees.
-%
-%   See also FINDNODE
-%   Brandon Caasenbrood
-%   2020, MIT LICENSE.
+%   Example:
+%       x = FindEdgeMesh(Mesh, 'hole');
 
-tol   = BuildTolerance(Mesh.Node); 
+function x = findEdgeMesh(Mesh,varargin)
+
+    tol   = BuildTolerance(Mesh.Node); 
 BdBox = BoundingBox(Mesh.Node);
 
 Request = varargin{1}; 

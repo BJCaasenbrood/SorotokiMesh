@@ -1,3 +1,17 @@
+%TABULATESHAPEFUNCTIONS Tabulate shape functions for each element in a cell array.
+% ShapeFnc = TABULATESHAPEFUNCTIONS(Element) takes a cell array Element, where each
+% element represents a different type of element and contains the number of nodes
+% for that element. It tabulates the shape functions for each element and returns
+% them as a cell array ShapeFnc.
+%
+% Example:
+% Element = {3, 4};
+% ShapeFnc = tabulateshapefunctions(Element);
+% % ShapeFnc{3} contains the shape functions for a 3-node element
+% % ShapeFnc{4} contains the shape functions for a 4-node element
+%
+% See also CELLFUN, POLYQUAD, POLYSHAPEFNC
+
 function ShapeFnc = tabulateshapefunctions(Element)
 
 ElemNNode = cellfun(@length,Element); 
@@ -100,7 +114,7 @@ end
 
 %---------------------------------------------------- TRIANGULAR QUADRATURE
 function [weight, point] = TriQuad(precision)
-if nargin<1, precision = 1; end
+if nargin<1, precision = 0; end
 
 if (precision == 0)
     xw=...

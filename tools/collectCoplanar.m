@@ -1,4 +1,16 @@
-%------------------------------------------ PLANAR PROJECTION OF 3D-POLYGON
+% COLLECTCOPLANAR   Collect coplanar triangles and create a polygon.
+%
+%   Poly = collectCoplanar(Node, Element, Element0) finds the vector span
+%   of each triangle defined by the nodes in Node and the elements in
+%   Element. It then collects the coplanar triangles and creates a polygon
+%   from them. The resulting polygon is returned as Poly.
+%
+%   Example:
+%   Node = [0 0 0; 1 0 0; 0 1 0; 1 1 0; 0.5 0.5 0];
+%   Element = [1 2 3; 2 3 4; 1 3 5; 1 2 5; 2 4 5; 3 4 5];
+%   Element0 = 1:size(Element, 1);
+%   Poly = collectCoplanar(Node, Element, Element0);
+
 function Poly = collectCoplanar(Node,Element,Element0)
 %finding the vector span of triangle
 N = zeros(length(Element),3);

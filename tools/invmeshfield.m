@@ -1,3 +1,21 @@
+% INVMESHFIELD - Inverse mapping of field values to mesh nodes
+%
+%   [Vx, Vy, Vn, Vz] = invmeshfield(Mesh, U) maps the field values U back to the
+%   corresponding mesh nodes in the Mesh structure.
+%
+%   Inputs:
+%       - Mesh: The mesh structure containing node information.
+%       - U: The field values to be mapped back to the mesh nodes.
+%
+%   Outputs:
+%       - Vx: The x-component of the field values at each mesh node.
+%       - Vy: The y-component of the field values at each mesh node.
+%       - Vn: The magnitude of the field values at each mesh node.
+%       - Vz: The z-component of the field values at each mesh node (if applicable).
+%
+%   Example:
+%       [Vx, Vy, Vn, Vz] = invmeshfield(Mesh, U);
+
 function [Vx,Vy,Vn,Vz] = invmeshfield(Mesh,U)
     
 if isa(Mesh,'Fem')

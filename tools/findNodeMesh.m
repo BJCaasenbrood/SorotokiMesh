@@ -1,29 +1,43 @@
+% FINDNODEMESH - Find nodes in a mesh based on specified criteria
+%
+%   x = findNodeMesh(Node, Request, varargin) finds nodes in a mesh based on the
+%   specified request.
+%
+%   Inputs:
+%       - Node: The node information of the mesh.
+%       - Request: A string specifying the type of request. Available options are:
+%           - 'sw': Find nodes in the southwest region of the bounding box.
+%           - 'se': Find nodes in the southeast region of the bounding box.
+%           - 'nw': Find nodes in the northwest region of the bounding box.
+%           - 'ne': Find nodes in the northeast region of the bounding box.
+%           - 'top': Find nodes in the top region of the bounding box.
+%           - 'bottom': Find nodes in the bottom region of the bounding box.
+%           - 'left': Find nodes in the left region of the bounding box.
+%           - 'right': Find nodes in the right region of the bounding box.
+%           - 'front': Find nodes in the front region of the bounding box.
+%           - 'back': Find nodes in the back region of the bounding box.
+%           - 'middle': Find nodes in the middle region of the bounding box.
+%           - 'topmid': Find nodes in the top middle region of the bounding box.
+%           - 'bottommid': Find nodes in the bottom middle region of the bounding box.
+%           - 'leftmid': Find nodes in the left middle region of the bounding box.
+%           - 'rightmid': Find nodes in the right middle region of the bounding box.
+%           - 'tophalf': Find nodes in the top half region of the bounding box.
+%           - 'bothalf': Find nodes in the bottom half region of the bounding box.
+%           - 'location': Find nodes based on specified location criteria.
+%           - 'sdfe': Find nodes based on signed distance function to an edge.
+%           - 'sdf': Find nodes based on signed distance function to a surface.
+%           - 'line': Find nodes along a line segment.
+%           - 'box': Find nodes within a specified box region.
+%           - 'floodfill': Find nodes using flood fill algorithm.
+%       - varargin: Additional input arguments depending on the request.
+%
+%   Outputs:
+%       - x: The output based on the specified request.
+%
+%   Example:
+%       x = findNodeMesh(Node, 'sw');
+
 function x = findNodeMesh(Node,varargin)
-%FINDNODE Returns a column vector of nodes 
-%
-%   x = FINDNODE(Node, 'SW')        -  Returns South-West located node
-%   x = FINDNODE(Node, 'SE')        -  Returns South-East located node
-%   x = FINDNODE(Node, 'NW')        -  Returns North-West located node
-%   x = FINDNODE(Node, 'NE')        -  Returns North-East located node
-%   x = FINDNODE(Node, 'Top')       -  Returns nodes at the top
-%   x = FINDNODE(Node, 'Bottom')    -  Returns nodes at the bottom
-%   x = FINDNODE(Node, 'Left')      -  Returns nodes at the left 
-%   x = FINDNODE(Node, 'Right')     -  Returns nodes at the right
-%   x = FINDNODE(Node, 'TopMid')    -  Returns node at the middle of top
-%   x = FINDNODE(Node, 'BottomMid') -  Returns node at the middle of bottom
-%   x = FINDNODE(Node, 'LeftMid')   -  Returns node at the middle of left 
-%   x = FINDNODE(Node, 'RightMid')  -  Returns node at the middle of right
-%
-%   x = FINDNODE(Node, 'Line',[x1,x2,y1,x2])  -  Line search
-%   x = FINDNODE(Node, 'Box',[x1,x2,y1,x2])   -  Box search
-%
-%   x = FINDNODE(Node, 'Location', P0, N)  -  Returns N number of nodes 
-%       closest to the point P0 (euclidean distnace)
-%
-%
-%   See also FINDNODE
-%   Brandon Caasenbrood
-%   2020, MIT LICENSE.
 
 BdBox = boxhull(Node);
 if size(Node,2) == 2

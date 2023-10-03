@@ -1,6 +1,17 @@
-function fem = TabulateShapeFunctionsC3H8(fem)
+%TABULATESHAPEFUNCTIONSC3H8 Tabulate shape functions for a C3D8 hexahedral element.
+% fem = TABULATESHAPEFUNCTIONSC3H8(fem) takes a struct fem, which contains the
+% finite element model information, and tabulates the shape functions for a C3D8
+% hexahedral element. The tabulated shape functions are stored in the fem struct.
+%
+% Example:
+%   fem = tabulateShapeFunctionsC3H8(fem);
+%   % fem.ShapeFnc{8} contains the shape functions for a C3D8 hexahedral element
 
-ElemNNode    = cellfun(@length,fem.Element); 
+% See also HEXAHEDRON, HEXASHAPEFNC
+
+function fem = tabulateShapeFunctionsC3H8
+
+ElemNNode    = 8; 
 fem.ShapeFnc = cell(max(ElemNNode),1);
 
 [W,Q] = Hexahedron();
