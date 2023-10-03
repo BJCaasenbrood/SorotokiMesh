@@ -1,16 +1,3 @@
-% class Mesh(msh,varargin)
-%--------------------------------------------------------------------------
-% MESH is a class used for mesh tesselation in 2D material domains. The 
-% class can generate triangular, quad, and polygonal finite elements. It
-% works seamlessly with SDF.m
-%--------------------------------------------------------------------------
-% main usage:
-%  3 msh = Mesh(sdf);                     % converts SDF class to MESH class
-%--------------------------------------------------------------------------
-% options:
-%   msh = Mesh(sdf,'NElem',1e3);         % mesh with 1000 poly elements
-%--------------------------------------------------------------------------
-
 classdef Mesh
 
     properties (Access = public)

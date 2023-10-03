@@ -77,5 +77,28 @@ classdef MeshTest < matlab.unittest.TestCase
             testCase.verifyEqual(msh.findElements('nw'), 2);
             testCase.verifyEqual(msh.findElements('ne'), 4);
         end
+
+        function testQuery(testCase)
+            sdf = sRectangle(10,10);
+            msh = Mesh(sdf,'Quads',[2,2]);
+            msh = msh.generate();
+
+            Z = magic(msh.NNode);
+            x = [0,0; 1,1; 0.5,0.5];
+
+            P = msh.query(x);
+            f = P * Z(:,1);
+            testCase.verifyEqual(round(f,0),[6;23;15]);
+        end
+
+        function testShow(testCase)
+            sdf = sRectangle(10,10);
+            msh = Mesh(sdf,'Quads',[2,2]);
+            msh = msh.generate();
+
+            h = msh.show();
+            testCase.verifyEqual(~isempty(h), true);
+            close all;
+        end
     end
 end

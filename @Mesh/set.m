@@ -1,4 +1,3 @@
-%---------------------------------------------------------------------- set
 function Mesh = set(Mesh, varargin)
     for ii = 1:2:length(varargin)
 

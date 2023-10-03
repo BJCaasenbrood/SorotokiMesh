@@ -1,4 +1,3 @@
-%---------------------------------------------------------------------- set
 function Mesh = removeElements(Mesh,varargin)
 
     v = Mesh.Node;

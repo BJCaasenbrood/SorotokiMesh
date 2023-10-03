@@ -1,3 +1,20 @@
+%QUERY Query function for computing distances and interpolating values on a mesh.
+% [P] = query(Mesh,PS1) computes the distances and interpolates values on a mesh.
+%
+% Inputs:
+% - Mesh: Structure containing mesh information, including element connectivity,
+% node coordinates, and shape functions.
+% - PS1: Set of points to query on the mesh.
+%
+% Outputs:
+% - P: Sparse matrix representing the interpolated values at the queried points.
+%
+% Example:
+%  Z = magic(12);
+%  x = [0.5, 0.5; -1, 1; 2, -2];
+%  P = Mesh.query(x);  % generate query matrix P
+%  f = P * Z(:,1);
+%
 function [P] = query(Mesh,varargin)
 
 PS1 = varargin{1};
