@@ -1,5 +1,5 @@
 function [Node,Element] = GenerateMeshImage(Mesh,Image)
-    
+
     B = Mesh.BdBox;
     Xscale = (B(2)-B(1))/size(Image,2);
     Yscale = (B(4)-B(3))/size(Image,1);
@@ -29,15 +29,13 @@ function [Node,Element] = GenerateMeshImage(Mesh,Image)
         end
     end
     
-    if isempty(Mesh.options.Hmin) || isempty(Mesh.options.Hmax)
-        AreaBd = (B(2)-B(1))*(B(4)-B(3));
-        Mesh.options.Hmin = sqrt(AreaBd/Mesh.NElem);
-        Mesh.options.Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
-        
-    end
+    % if isempty(Mesh.options.Hmin) || isempty(Mesh.options.Hmax)
+    %     AreaBd = (B(2)-B(1))*(B(4)-B(3));
+    %     Mesh.options.Hmin = sqrt(AreaBd/Mesh.NElem);
+    %     Mesh.options.Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
+    % end
 
-    Tesselation = triangulationcreate(c_cell, 1, Mesh.options.Hmin,         ...
-        Mesh.options.Hmax, Mesh.options.ElementOrder);
+    Tesselation = triangulationcreate(c_cell, 1, Mesh.options.ElementSize, Mesh.options.ElementSize, Mesh.options.ElementOrder);
     
     Node    = Tesselation.Nodes.';    
     Element = Tesselation.Elements.';

@@ -35,11 +35,11 @@ function obj = Mesh(Input,varargin)
     if isa(Input,'char')
        [~,~,ext] = fileparts(Input);
        if strcmp(ext,'.stl')
-           if strcmp(varargin{1},'Hmesh')
-               obj.options.Hmin = varargin{2}(1);
-               obj.options.Hmax = varargin{2}(2);
+           if strcmp(varargin{1},'ElementSize')
+               obj.options.Hmin = varargin{2};
+               obj.options.Hmax = varargin{2};
            else
-               error('Requested inputs is Hmesh with [Hmin,Hmax]');
+               error('Requested inputs is ElementSize');
            end
            warning off % Matlab, please fix your stuff...
            [v,f] = GenerateMeshSTL(obj,Input);
@@ -54,11 +54,16 @@ function obj = Mesh(Input,varargin)
 
        elseif strcmp(ext,'.obj')
            [v,f] = objreader(Input);
-       elseif strcmp(ext,'.png') || strcmp(ext,'.jpg') 
+       elseif strcmp(ext,'.png') || strcmp(ext,'.jpg')
            obj.Type  = 'C2T3'; 
-           obj.options.Image     = rgb2gray(imread(Input));
+           obj.options.Image = rgb2gray(imread(Input));
            obj.options.Dimension = 2;
        else, cout('err','* extension not recognized');
+       end
+
+       if size(Input,3) == 3
+            obj.options.Image = rgb2gray(Input);
+            obj.options.Dimension = 2;
        end
        
        if isempty(obj.options.Image) && isempty(obj.options.STLFile)  
@@ -158,10 +163,13 @@ function obj = Mesh(Input,varargin)
         obj.Type = 'C3T3'; 
     end
     
-    assert(~isempty(obj.BdBox), 'Bounding box must be defined via BdBox.');
-    obj.Dim = 0.5*numel(obj.BdBox);
-    
     if ~isempty(obj.options.Image)
+
+        if isempty(obj.BdBox)
+            [n,m] = size(obj.options.Image);
+            obj.BdBox = [0,n,0,m] * (1/10);
+        end
+
         [v,f] = GenerateMeshImage(obj,obj.options.Image);
         
         obj.Node    = v;
@@ -179,6 +187,9 @@ function obj = Mesh(Input,varargin)
     elseif ~isempty(obj.options.STLFile)
         obj = obj.generate();
     end
+
+    assert(~isempty(obj.BdBox), 'Bounding box must be defined via BdBox.');
+    obj.Dim = numel(obj.BdBox) / 2;
 end
 
 end

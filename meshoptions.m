@@ -19,6 +19,7 @@ classdef meshoptions
         STLFile;
         Hmin;
         Hmax;
+        ElementSize;
         SimplificationTolerance;
         ElementOrder;
         isGenerated;

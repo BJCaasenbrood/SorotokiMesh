@@ -46,7 +46,7 @@ for ii = 1:Nsp
    r  = sqrt(dot(V2,V2));
    
    L = [0,0; r*cos(pi+th),-r*sin(pi+th)]; % draw line to point 
-   P = [V1;V1(1,:)];   
+   P = [V1; V1(1,:)];   
    [xc, yc] = intersections(P(:,1),P(:,2),L(:,1),L(:,2)); 
    
    if isempty(xc) % outside element
@@ -66,7 +66,9 @@ for ii = 1:Nsp
 end
 
 d = cell2mat(d); 
-
 P = sparse(d(:,1),d(:,2),d(:,3),Nsp,Mesh.NNode);
 P = spdiags(1./sum(P,2),0,size(P,1),size(P,1))*P;
+
+P(isnan(P)) = 0;
+
 end

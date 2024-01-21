@@ -136,8 +136,8 @@ function Mesh = generate(Mesh, varargin)
         case ('C2PX'), Mesh.ShapeFnc = tabulateshapefunctions(f);
         case ('C2T3'), Mesh.ShapeFnc = tabulateshapefunctions(f);
         case ('C2Q4'), Mesh.ShapeFnc = tabulateshapefunctions(f);
-        case ('C3H8'), Mesh.ShapeFnc = tabulateShapeFunctionsC3H8(f);
-        case ('C3T4'), Mesh.ShapeFnc = tabulateShapeFunctionsC3T4(f);
+        case ('C3H8'), Mesh.ShapeFnc = tabulateShapeFunctionsC3H8;
+        case ('C3T4'), Mesh.ShapeFnc = tabulateShapeFunctionsC3T4;
         otherwise , Mesh.ShapeFnc = tabulateshapefunctions(f);
     end
 
