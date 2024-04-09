@@ -28,12 +28,17 @@ function [Node,Element] = GenerateMeshImage(Mesh,Image)
             c_cell{end+1,1} = [Xscale*c_red(:,1), (Yscale)*c_red(:,2)];
         end
     end
-    
-    % if isempty(Mesh.options.Hmin) || isempty(Mesh.options.Hmax)
-    %     AreaBd = (B(2)-B(1))*(B(4)-B(3));
-    %     Mesh.options.Hmin = sqrt(AreaBd/Mesh.NElem);
-    %     Mesh.options.Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
-    % end
+    % 
+    if isempty(Mesh.options.Hmin) || isempty(Mesh.options.Hmax)
+        AreaBd = (B(2)-B(1))*(B(4)-B(3));
+        Mesh.options.Hmin = sqrt(AreaBd/Mesh.NElem);
+        Mesh.options.Hmax = 1.5*sqrt(AreaBd/Mesh.NElem);
+    end
+
+    if isempty(Mesh.options.ElementSize)
+        AreaBd = (B(2)-B(1))*(B(4)-B(3));
+        Mesh.options.ElementSize = sqrt(AreaBd/Mesh.NElem);
+    end
 
     Tesselation = triangulationcreate(c_cell, 1, Mesh.options.ElementSize, Mesh.options.ElementSize, Mesh.options.ElementOrder);
     
